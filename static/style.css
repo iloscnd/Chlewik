@@ -1,0 +1,29 @@
+
+
+body {
+    background-color: lightslategray
+}
+
+
+.button {
+    border-radius: 15px;
+    background-color: mediumblue; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    outline: none;
+    box-shadow: 0px 5px grey;
+    font-size: 16px;
+}
+
+.button:hover {
+    background-color: midnightblue;
+    cursor: pointer;
+}
+
+.button:active{
+    transform: translateY(5px);
+    box-shadow: 0 0;
+}

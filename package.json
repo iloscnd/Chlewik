@@ -1,0 +1,19 @@
+{
+  "name": "chlewik",
+  "version": "1.0.0",
+  "description": "Strona z grami wielosobowym w przegladarce",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iloscnd/Chlewik.git"
+  },
+  "author": "Adam Gańczorz, Adam Kuczaj, Piotr Pusz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/iloscnd/Chlewik/issues"
+  },
+  "homepage": "https://github.com/iloscnd/Chlewik#readme"
+}

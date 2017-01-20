@@ -27,3 +27,13 @@ body {
     transform: translateY(5px);
     box-shadow: 0 0;
 }
+
+input[type=text]{
+    width: 75%;
+    border: 3px solid #999  
+}
+
+input[type=text]:focus {
+    border: 3px solid #555;
+}
+

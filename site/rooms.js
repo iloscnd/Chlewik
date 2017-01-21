@@ -5,11 +5,13 @@ var express = require('express');
  router.use( express.static('./static')); //muszę
 
 router.all('/', (req,res) =>{
-    if(!req.session.entered)
+    if(req.session.entered)
     {
+        res.render('roomView.ejs',req.session);
+    }
+    else{
         res.redirect("/");
     }
-    res.render('roomView.ejs',req.session);
 });
 
 module.exports = router;

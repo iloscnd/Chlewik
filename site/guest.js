@@ -19,12 +19,12 @@ var FileStore = require('session-file-store')(session);
         res.render("guestlogin.ejs");
 });
 
-router.post("/enter",(req,res)=>{
+router.all("/enter",(req,res)=>{
     //TODO check if avaialable nick
     req.session.entered = 1;
-    req.session.name = req.body.nick;
+    req.session.name = req.body.name;
     req.session.guest = 1;
-    res.redirect('/');
+    res.redirect('/rooms');
 });
 
 module.exports = router;

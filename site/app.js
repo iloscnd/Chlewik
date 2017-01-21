@@ -32,27 +32,27 @@ app.use('/guest', guestRouter);
 var registerRouter = require('./register');
 app.use('/register', registerRouter);
 
+var roomsRouter = require('./rooms');
+app.use('/rooms', roomsRouter);
 
+var userRouter = require('./user');
+app.use('/user', userRouter);
 
 app.get("/", (req, res) =>{
     if(req.session.entered)
     {
-        model = {
-            nick: req.session.name,
-        };
-
-        res.render('roomView.ejs',model)
+        res.redirect("/rooms");
     }
     else
         res.render("index.ejs");
 
 });
 
-app.post("/",(req,res)=>{
+app.all("/logout",(req,res)=>{
    // console.log(req.session);
     req.session.destroy();
     res.redirect('/');
-});
+}); 
 
 
 

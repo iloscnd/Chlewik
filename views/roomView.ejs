@@ -7,10 +7,13 @@
     </title>
 
     <body>
+        <% if (guest==0) { %> 
+            Zalogowano jako <%= name %>
+        <% } else { %>
+            Wszedłeś jako gość <%= name %>
+        <% } %>
 
-        Zalogowano jako <%= nick %>
-
-        <form method="POST">
+        <form method="POST" action="\logout">
             <button class="button" style="float:right; width=100%;" name='logout'>Wyloguj</button>
         </form>
 

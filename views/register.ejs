@@ -12,7 +12,14 @@
         <img src="placeholderLogo.png" alt="Logo" height=100px width=300px >
         </a>
         <br> 
-
+        <div class="container" style="height:250px; width:400px; ">
+            <form method="POST" action="/user/create" style="float:left ; width:100%; height:100%"> <!-- pełny adres -->
+                        Login <br> <input type='text' name='name' style="float:left ; width:100%"><br> <br>
+                        Hasło <br> <input type='password' name='pwd' style="float:left; width:100%"><br> <br>
+                        Powtórz hasło <br> <input type='password' name='pwd2' style="float:left; width:100%"><br> <br>
+                        <button type='submit' class="button" >Zaloguj</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+            </form>
+        </div>
     </center>
     </body>
 </html>

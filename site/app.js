@@ -35,7 +35,7 @@ app.use('/register', registerRouter);
 
 
 app.get("/", (req, res) =>{
-    if(req.session.logged)
+    if(req.session.entered)
     {
         model = {
             nick: req.session.name,
@@ -49,7 +49,7 @@ app.get("/", (req, res) =>{
 });
 
 app.post("/",(req,res)=>{
-    console.log(req.session);
+   // console.log(req.session);
     req.session.destroy();
     res.redirect('/');
 });

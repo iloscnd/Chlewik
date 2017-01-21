@@ -9,11 +9,13 @@ var FileStore = require('session-file-store')(session);
 var app = express();
 
 
+
+
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use( bodyParser.urlencoded({extended:true}) ) ;
-app.use( express.static('./static'));
+
 app.use( cookieParser() );
 
 app.use(session({
@@ -21,6 +23,15 @@ app.use(session({
     secret: 'keyboard cat',
     maxAge: 60000
 }));
+
+app.use( express.static('./static'));
+
+var guestRouter = require('./guest');
+app.use('/guest', guestRouter);
+
+var registerRouter = require('./register');
+app.use('/register', registerRouter);
+
 
 
 app.get("/", (req, res) =>{
@@ -45,26 +56,8 @@ app.post("/",(req,res)=>{
 
 
 
-app.get("/guest",(req,res) =>{
-
-    if(req.session.logged)
-        res.redirect('/');
-    else
-        res.render("guestlogin.ejs");
-});
-
-app.post("/guest",(req,res)=>{
-    //check if avaialable nick
-    req.session.logged = 1;
-    req.session.name = req.body.nick;
-    req.session.guest = 1;
-    res.redirect('/');
-});
 
 
-app.get('/register', (req,res) =>{
-    res.render('register.ejs');
-});
 
 app.get('/login', (req,res) =>{
     res.render('login.ejs');    

@@ -12,6 +12,11 @@ router.all('/', (req,res) =>{
     else{
         res.redirect("/");
     }
+<<<<<<< HEAD
+=======
+    else
+        res.render('roomView.ejs',req.session);
+>>>>>>> development
 });
 
 module.exports = router;

@@ -1,0 +1,21 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="style.css">
+    </head>
+    <title>
+        Pokoje
+    </title>
+
+    <body>
+        <% if (guest==0) { %> 
+            Zalogowano jako <%= name %>
+        <% } else { %>
+            Wszedłeś jako gość <%= name %>
+        <% } %>
+
+        <form method="POST" action="\logout">
+            <button class="button" style="float:right; width=100%;" name='logout'>Wyloguj</button>
+        </form>
+
+    </body>
+</html>

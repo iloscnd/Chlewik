@@ -8,19 +8,27 @@
 
     <body>
     <center>
-
+        <a href="/">
         <img src="placeholderLogo.png" alt="Logo" height=100px width=300px >
+        </a>
         <br> 
 
-           <div style="max-width:300px;max-height: 200px; border: 5px double grey; padding: 30px; background: white;  border-radius: 15px 15px 5px;">
+        <div class="container" style="height:200px; width:400px; ">
 
-                <button class="button disabled" style="float:right width=100%;">Rejestracja</button>
-                <button class="button disabled" style="float:right; width=100%;">Logowanie</button>
+                <form action="/register" style="float:right; width:35%; height:50%">
+                    <button type="submit" class="button" ">Rejestracja</button>
+                </form>
+                <form method="POST" action="/user/enter" style="float:left ; width:60%; height:100%"> <!-- pełny adres -->
+                    Login <br> <input type='text' name='name' style="float:left ; width:100%"><br> <br>
+                    <!--<text style="float:left">--> Hasło <br> <input type='password' name='pwd' style="float:left; width:100%"><br> <br>
+                    <button type='submit' class="button" >Zaloguj</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+                </form>
                 <br><br> 
-                <button class="button disabled" style="float:right width=100%;" >Wejdź jako gość</button>
-       
+                <form action="/guest" style="float:right; width:35%; height:50%">
+                <button type="submit" class="button" >Wejdź jako gość</button>
+                </form>
         </div>
-    <center>
+    </center>
     </body>
 </html>
 

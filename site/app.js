@@ -49,7 +49,7 @@ app.get("/", (req, res) =>{
 });
 
 app.all("/logout",(req,res)=>{
-    console.log(req.session);
+   // console.log(req.session);
     req.session.destroy();
     res.redirect('/');
 }); 

@@ -18,6 +18,13 @@ body {
     font-size: 16px;
 }
 
+.container {
+    border: 5px double midnightblue; 
+    padding: 15px; 
+    background: royalblue;  
+    border-radius: 15px 15px 15px 15px;"
+}
+
 .button:hover {
     background-color: midnightblue;
     cursor: pointer;

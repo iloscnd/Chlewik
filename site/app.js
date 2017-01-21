@@ -95,7 +95,7 @@ app.use((req,res,next) => {
 
 var server = http.createServer(app).listen(process.env.PORT || 3000);
 
-console.log( 'serwer started' );
+console.log( 'server started' );
 
 
 

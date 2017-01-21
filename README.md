@@ -1,2 +1,2 @@
 # Chlewik
-Strona jak kurnik ale z większymi zwierzętami.
+Strona jak kurnik, ale z większymi zwierzętami.

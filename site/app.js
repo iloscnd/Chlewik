@@ -7,6 +7,7 @@ var FileStore = require('session-file-store')(session);
  
 
 var app = express();
+var server = http.createServer(app);
 
 
 
@@ -50,10 +51,11 @@ app.get("/", (req, res) =>{
 
 app.all("/logout",(req,res)=>{
    // console.log(req.session);
-    req.session.destroy();
-    res.redirect('/');
+   if(req.session.guest==1) res.redirect('/guest/logout');
+   else res.redirect('/user/logout'); //bez else się rzuca "can't set headers after they are sent"
+    //req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
+    //res.redirect('/');
 }); 
-
 
 
 
@@ -86,7 +88,7 @@ app.use((req,res,next) => {
 
 
 
-var server = http.createServer(app).listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 3000);
 
 console.log( 'server started' );
 

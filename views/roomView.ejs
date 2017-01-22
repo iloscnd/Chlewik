@@ -1,21 +1,126 @@
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="style.css">
+        <title> Pokoje </title>
+        <script>
+        window.addEventListener('load', function() { //jak będzie łądował body jak rozumiem
+            //console.log("chociaż tyle\n");
+            var newBt = document.getElementById('newRoomBt');
+            var newForm = document.getElementById('newRoomForm');
+            newBt.addEventListener('click', function(){
+                var req=new XMLHttpRequest();
+                req.open('get', '/rooms/ajaxFormNew', true);
+                req.onreadystatechange = function() {
+                    if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                        newBt.style = "display:none";
+                        newBt.innerHTML = req.responseText;
+                        newForm.style="float:left"// ; width:100%; height:100%";
+                    }
+                }
+                req.send(); //oczywiście przed końcem funkcji przycisku
+            });
+            
+            //żeby na początku już
+            //var form = document.getElementById('newRoomForm');
+            var pwd = document.getElementById('pwd');
+            var pwd2 = document.getElementById('pwd2');
+            var roomName = document.getElementById('name');
+            var err = document.getElementById('err');
+            newForm.onsubmit = function() {
+                err.innerHTML = "";
+                var flag = true;
+                
+                var valpwd = pwd.value.trim();
+                var valpwd2 = pwd2.value.trim();
+                var valname = roomName.value.trim();
+
+
+                if (valpwd != valpwd2) 
+                {
+                    err.innerHTML += "hasła się nie pokrywają"
+                    flag = false;
+                }
+                var name = roomName.value.trim(); //usuwa whitespace na końcach
+                if (name == "")
+                {
+                    if (flag == false) err.innerHTML += "<br>";
+                    err.innerHTML += "nazwa pokoju nie może być pusta"
+                    flag = false;
+                }
+
+                var req=new XMLHttpRequest();
+                var params = "?name="+name;
+                req.open('get', '/rooms/ajaxIsName'+params, true);
+                
+                req.onreadystatechange = function() {
+                    if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                        if(req.responseText != "OK") {
+                            if (flag == false) err.innerHTML += "<br>";
+                            err.innerHTML += "nazwa pokoju jest już zajęta"
+                            flag = false;
+                            
+                        }
+                        else {
+                            //err.innerHTML += "coś jest nie tak" //już ok
+                            if(pwd.value.trim() == valpwd && pwd2.value.trim()==valpwd2 && roomName.value==valname && flag==true) newForm.submit(); //jeśli przez czas asynchr. nic nie zmienił
+                        }
+                    }
+                }
+                req.send();
+                /* //to jakby było synchronicznie
+                if(req.responseText != "OK") {
+                    if (flag == false) document.getElementById('err').innerHTML += "<br>";
+                    document.getElementById('err').innerHTML += "nazwa pokoju jest już zajęta"
+                    flag = false;
+                }
+                return flag;*/
+                
+                return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź
+
+                
+            };
+            
+            
+            
+        });
+        </script>
+        
     </head>
-    <title>
-        Pokoje
-    </title>
+    
 
     <body>
-        <% if (guest==0) { %> 
-            Zalogowano jako <%= name %>
+        <% if (ses.guest==0) { %> 
+            Zalogowano jako <%= ses.name %>
         <% } else { %>
-            Wszedłeś jako gość <%= name %>
+            Wszedłeś jako gość <%= ses.name %>
         <% } %>
-
-        <form method="POST" action="\logout">
-            <button class="button" style="float:right; width=100%;" name='logout'>Wyloguj</button>
+        <div class="container" >
+            <button id='newRoomBt' class="button" >utwórz pokój</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+            <form id ='newRoomForm' method="POST"  action="/rooms/create"  style="display:none"> <!--  -->
+                            Nazwa pokoju <br> <input type='text' id="name" name='roomName' style="float:left ; width:100%"><br> <br>
+                            Hasło (opcjonalne) <br> <input type='password' id="pwd" name='pwd' style="float:left; width:100%"><br> <br>
+                            Powtórz hasło <br> <input type='password' id="pwd2" name='pwd2' style="float:left; width:100%"><br> <br>
+                            <p id='err' style="color:orange"> </p> <!-- to robi za część odstępu do przycisku kiedy jest puste ; br po tym chyba sam robi-->
+                            <button type='submit' class="button" >Utwórz i wejdź</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+                            <!-- ew. przycisk anuluj -->
+            </form>
+        </div>
+        <% for (i=0; i<roomz.length; ++i) {  %>
+            <div class="container">
+                <%= roomz[i].name %> <br>
+            </div>
+        <% } %>
+   
+        <form id='out' method="POST" action="/logout"> <!-- action="/logout"-->
+            <button class="button" style="float:right" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
         </form>
 
+        <% if (ses.guest==0) { %> 
+            <form id='clear' method="POST" action="/user/delete"> <!--  -->
+                <button class="button" style="float:right" name='logout'>Usuń konto bez pytania</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
+            </form>
+        <% } %>
+
     </body>
+
 </html>

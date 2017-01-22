@@ -11,7 +11,7 @@ var FileStore = require('session-file-store')(session);
 
 //innych middleware jakoś nie muszę powielać
 
-var guestz = []; //na razie nie usuwam przy wyjściu i nie można na drugiego gościa z taką samą nazwą po wylogowaniu
+var guestz = new Map(); //na razie nie usuwam przy wyjściu i nie można na drugiego gościa z taką samą nazwą po wylogowaniu
 
  router.get("/",(req,res) =>{
 
@@ -27,10 +27,7 @@ router.get('/ajaxIsFree', (req,res) => {
     var flag = true;
     var name = req.query.name;
     console.log(name+"\n");
-    for (i=0; i<guestz.length; ++i) {
-        console.log(name+"   "+guestz[i].name+"\n");
-        if (guestz[i].name == name) {flag = false; break; }
-    }
+    if (guestz.get(name) != undefined) flag = false;
     var resp = "";
     if (flag) resp="OK"; else resp="NO";
     console.log(resp+"\n");
@@ -42,21 +39,32 @@ router.all("/enter",(req,res)=>{
     console.log("wchodzę\n");
     console.log(name+"\n");
     var flag = true;
-    for (i=0; i<guestz.length; ++i) {
-        console.log(name+"   "+guestz[i].name+"\n");
-        if (guestz[i].name == name) {flag = false; break; }
-    }
+    if (guestz.get(name) != undefined) flag = false;
     if (flag) {
         var newGuest = {
-            name : req.body.name,
+            name : req.body.name, //powielam, ale niech będzie
         };
-        guestz.push(newGuest);
+        guestz.set(name,newGuest);
         req.session.entered = 1;
         req.session.name = req.body.name;
         req.session.guest = 1;
         res.redirect('/rooms');
     }
     else { res.redirect('/'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+});
+
+router.all("/logout",(req,res)=>{
+    var name = req.session.name;
+    //console.log(req.session.entered + "    " + req.session.guest + "\n");
+    if(req.session.entered==1 && req.session.guest==1) {
+        //console.log(name+"!!!!\n");
+        guestz.delete(name);
+        req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
+        res.redirect('/');
+    }
+    else{
+        res.redirect('/');
+    }
 });
 
 module.exports = router;

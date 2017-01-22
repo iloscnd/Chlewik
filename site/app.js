@@ -51,8 +51,10 @@ app.get("/", (req, res) =>{
 
 app.all("/logout",(req,res)=>{
    // console.log(req.session);
-    req.session.destroy(); //czemu on się rzuca...
-    res.redirect('/');
+   if(req.session.guest==1) res.redirect('/guest/logout');
+   else res.redirect('/user/logout'); //bez else się rzuca "can't set headers after they are sent"
+    //req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
+    //res.redirect('/');
 }); 
 
 

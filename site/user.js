@@ -8,18 +8,17 @@ router.get('/', (req,res) =>{
     res.redirect("/rooms");
 });
 
-var userz = [];
+var userz = new Map();
 
 router.all('/enter', (req,res) =>{
     //TODO check if valid pwd etc
 
     var name = req.body.name;
-    var name = req.body.pwd;
+    var pwd = req.body.pwd;
     console.log("wchodzę\n");
     var flag = false;
-    for (i=0; i<userz.length; ++i) {
-        if (userz[i].name == name && userz[i].pwd == pwd) {flag = true; break; }
-    }
+    //od razu że nie undefined i że jak trzeba - ale uwaga, bo bez .pwd to cały obiekt
+    if (userz.get(name) != undefined &&  userz.get(name).pwd == pwd) flag = true;
     if (flag) {
         req.session.entered = 1;
         req.session.name = req.body.name;
@@ -38,15 +37,12 @@ router.all('/create', (req,res) =>{
     var flag = true;
     var name = req.body.name;
     console.log("zakładam\n");
-    for (i=0; i<userz.length; ++i) {
-        if (userz[i].name == name) {flag = false; break; }
-    }
+    if (userz.get(name) != undefined) flag = false;
     if (flag) {
         var newUser = {
-            name : req.body.name,
             pwd : req.body.pwd
         };
-        userz.push(newUser);
+        userz.set(name,newUser);
         req.session.entered = 1;
         req.session.name = req.body.name;
         req.session.guest = 0;
@@ -63,10 +59,7 @@ router.get('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
     var flag = true;
     var name = req.query.name;
     console.log(name+"\n");
-    for (i=0; i<userz.length; ++i) {
-        console.log(name+"   "+userz[i].name+"\n");
-        if (userz[i].name == name) {flag = false; break; }
-    }
+    if (userz.get(name) != undefined) flag = false;
     var resp = "";
     if (flag) resp="OK"; else resp="NO";
     console.log(resp+"\n");
@@ -82,17 +75,40 @@ router.get('/ajaxValid', (req,res) => { //zmienić jakoś na post
     console.log(pwd+"\n");
     
     var resp = "";
-    for (i=0; i<userz.length; ++i) {
-        console.log(name+"   "+userz[i].name+"\n");
-        if (userz[i].name == name) {
-            if (userz[i].pwd == pwd) resp = "OK"; else resp = "BAD";
-            flag = false; 
-            break; 
-        }
+    var getPwd ;
+    if (userz.get(name) != undefined) getPwd = userz.get(name).pwd;
+    //console.log(userz.get(name)+"\n");
+    if(getPwd != undefined) {
+        if (getPwd == pwd) resp = "OK"; else resp = "BAD";
+        flag = false; 
     }
     if (flag) resp="NOONE"; 
     console.log(resp+"\n");
     res.send(resp);
+});
+
+
+router.all("/logout",(req,res)=>{
+    var name = req.body.name;
+    if(req.session.entered==1 && req.session.guest!=1) {
+        req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
+        res.redirect('/');
+    }
+    else{
+        res.redirect('/');
+    }
+});
+
+router.all("/delete",(req,res)=>{
+    var name = req.session.name;
+    if(req.session.entered==1 && req.session.guest!=1) {
+        userz.delete(name);
+        req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
+        res.redirect('/');
+    }
+    else{
+        res.redirect('/');
+    }
 });
 
 module.exports = router;

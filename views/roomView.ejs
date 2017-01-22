@@ -78,7 +78,10 @@
                 return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź
 
                 
-            }
+            };
+            
+            
+            
         });
         </script>
         
@@ -108,12 +111,15 @@
             </div>
         <% } %>
    
-        <form method="POST" action="/logout">
-            <button class="button" style="float:right; width=100%;" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
+        <form id='out' method="POST" action="/logout"> <!-- action="/logout"-->
+            <button class="button" style="float:right" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
         </form>
 
-
-    
+        <% if (ses.guest==0) { %> 
+            <form id='clear' method="POST" action="/user/delete"> <!--  -->
+                <button class="button" style="float:right" name='logout'>Usuń konto bez pytania</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
+            </form>
+        <% } %>
 
     </body>
 

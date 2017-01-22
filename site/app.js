@@ -50,10 +50,9 @@ app.get("/", (req, res) =>{
 
 app.all("/logout",(req,res)=>{
    // console.log(req.session);
-    req.session.destroy();
+    req.session.destroy(); //czemu on się rzuca...
     res.redirect('/');
 }); 
-
 
 
 

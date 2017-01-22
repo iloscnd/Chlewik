@@ -1,21 +1,73 @@
 <html>
     <head>
         <link rel="stylesheet" type="text/css" href="style.css">
+        <title> Pokoje </title>
+        <script>
+        window.addEventListener('load', function() { //jak będzie łądował body jak rozumiem
+            //console.log("chociaż tyle\n");
+            var newBt = document.getElementById('newRoomBt');
+            var newForm = document.getElementById('newRoomForm');
+            newBt.addEventListener('click', function(){
+                var req=new XMLHttpRequest();
+                req.open('get', '/rooms/ajaxFormNew', true);
+                req.onreadystatechange = function() {
+                    if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                        newBt.style = "display:none";
+                        newBt.innerHTML = req.responseText;
+                        newForm.style="float:left"// ; width:100%; height:100%";
+                    }
+                }
+                req.send(); //oczywiście przed końcem funkcji przycisku
+            });
+            document.getElementById('newRoomForm').onsubmit = function() {
+                document.getElementById('err').innerHTML = "";
+                var flag = true;
+                if (document.getElementById('pwd').value != document.getElementById('pwd2').value) 
+                {
+                    document.getElementById('err').innerHTML += "hasła się nie pokrywają"
+                    flag = false;
+                }
+                var name = document.getElementById('name').value.trim(); //uswua whitespace na końcach
+                if (name == "")
+                {
+                    if (flag == false) document.getElementById('err').innerHTML += "<br>";
+                    document.getElementById('err').innerHTML += "nazwa pokoju nie może być pusta"
+                    flag = false;
+                }
+                return flag;
+            }
+    
+        });
+        </script>
+        
     </head>
-    <title>
-        Pokoje
-    </title>
+    
 
     <body>
-        <% if (guest==0) { %> 
-            Zalogowano jako <%= name %>
+        <% if (ses.guest==0) { %> 
+            Zalogowano jako <%= ses.name %>
         <% } else { %>
-            Wszedłeś jako gość <%= name %>
+            Wszedłeś jako gość <%= ses.name %>
         <% } %>
-
-        <form method="POST" action="\logout">
+        <dev class="container" >
+            <button id='newRoomBt' class="button" >utwórz pokój</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+            <form id ='newRoomForm' method="POST"  action="/rooms/create"  style="display:none"> <!--  -->
+                            Nazwa pokoju <br> <input type='text' id="name" name='roomName' style="float:left ; width:100%"><br> <br>
+                            Hasło (opcjonalne) <br> <input type='password' id="pwd" name='pwd' style="float:left; width:100%"><br> <br>
+                            Powtórz hasło <br> <input type='password' id="pwd2" name='pwd2' style="float:left; width:100%"><br> <br>
+                            <p id='err' style="color:red"> </p>
+                            <button type='submit' class="button" >Utwórz i wejdź</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+                            <!-- ew. przycisk anuluj -->
+            </form>
+        </dev>
+        <% for (i=0; i<roomz.length; ++i) {  %>
+            <%= roomz[i].name %> <br>
+        <% } %>
+   
+        <form method="POST" action="/logout">
             <button class="button" style="float:right; width=100%;" name='logout'>Wyloguj</button>
         </form>
 
     </body>
+
 </html>

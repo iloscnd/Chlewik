@@ -9,7 +9,7 @@ var FileStore = require('session-file-store')(session);
 var app = express();
 var server = http.createServer(app);
 
-
+var io = require('socket.io')(server)
 
 
 app.set('view engine', 'ejs');
@@ -38,6 +38,9 @@ app.use('/rooms', roomsRouter);
 
 var userRouter = require('./user');
 app.use('/user', userRouter);
+
+var gameRouter = require('./game')(io);
+app.use('/game',gameRouter);
 
 app.get("/", (req, res) =>{
     if(req.session.entered)

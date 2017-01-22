@@ -13,4 +13,5 @@ router.all('/', (req,res) =>{
         res.render('roomView.ejs',req.session);
 });
 
+
 module.exports = router;

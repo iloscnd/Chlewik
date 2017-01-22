@@ -7,6 +7,7 @@ var FileStore = require('session-file-store')(session);
  
 
 var app = express();
+var server = http.createServer(app);
 
 
 
@@ -86,7 +87,7 @@ app.use((req,res,next) => {
 
 
 
-var server = http.createServer(app).listen(process.env.PORT || 3000);
+server.listen(process.env.PORT || 3000);
 
 console.log( 'server started' );
 

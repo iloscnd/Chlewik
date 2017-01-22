@@ -19,24 +19,66 @@
                 }
                 req.send(); //oczywiście przed końcem funkcji przycisku
             });
-            document.getElementById('newRoomForm').onsubmit = function() {
-                document.getElementById('err').innerHTML = "";
+            
+            //żeby na początku już
+            //var form = document.getElementById('newRoomForm');
+            var pwd = document.getElementById('pwd');
+            var pwd2 = document.getElementById('pwd2');
+            var roomName = document.getElementById('name');
+            var err = document.getElementById('err');
+            newForm.onsubmit = function() {
+                err.innerHTML = "";
                 var flag = true;
-                if (document.getElementById('pwd').value != document.getElementById('pwd2').value) 
+                
+                var valpwd = pwd.value.trim();
+                var valpwd2 = pwd2.value.trim();
+                var valname = roomName.value.trim();
+
+
+                if (valpwd != valpwd2) 
                 {
-                    document.getElementById('err').innerHTML += "hasła się nie pokrywają"
+                    err.innerHTML += "hasła się nie pokrywają"
                     flag = false;
                 }
-                var name = document.getElementById('name').value.trim(); //uswua whitespace na końcach
+                var name = roomName.value.trim(); //usuwa whitespace na końcach
                 if (name == "")
                 {
-                    if (flag == false) document.getElementById('err').innerHTML += "<br>";
-                    document.getElementById('err').innerHTML += "nazwa pokoju nie może być pusta"
+                    if (flag == false) err.innerHTML += "<br>";
+                    err.innerHTML += "nazwa pokoju nie może być pusta"
                     flag = false;
                 }
-                return flag;
+
+                var req=new XMLHttpRequest();
+                var params = "?name="+name;
+                req.open('get', '/rooms/ajaxIsName'+params, true);
+                
+                req.onreadystatechange = function() {
+                    if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                        if(req.responseText != "OK") {
+                            if (flag == false) err.innerHTML += "<br>";
+                            err.innerHTML += "nazwa pokoju jest już zajęta"
+                            flag = false;
+                            
+                        }
+                        else {
+                            //err.innerHTML += "coś jest nie tak" //już ok
+                            if(pwd.value.trim() == valpwd && pwd2.value.trim()==valpwd2 && roomName.value==valname && flag==true) newForm.submit(); //jeśli przez czas asynchr. nic nie zmienił
+                        }
+                    }
+                }
+                req.send();
+                /* //to jakby było synchronicznie
+                if(req.responseText != "OK") {
+                    if (flag == false) document.getElementById('err').innerHTML += "<br>";
+                    document.getElementById('err').innerHTML += "nazwa pokoju jest już zajęta"
+                    flag = false;
+                }
+                return flag;*/
+                
+                return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź
+
+                
             }
-    
         });
         </script>
         
@@ -49,24 +91,29 @@
         <% } else { %>
             Wszedłeś jako gość <%= ses.name %>
         <% } %>
-        <dev class="container" >
+        <div class="container" >
             <button id='newRoomBt' class="button" >utwórz pokój</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
             <form id ='newRoomForm' method="POST"  action="/rooms/create"  style="display:none"> <!--  -->
                             Nazwa pokoju <br> <input type='text' id="name" name='roomName' style="float:left ; width:100%"><br> <br>
                             Hasło (opcjonalne) <br> <input type='password' id="pwd" name='pwd' style="float:left; width:100%"><br> <br>
                             Powtórz hasło <br> <input type='password' id="pwd2" name='pwd2' style="float:left; width:100%"><br> <br>
-                            <p id='err' style="color:red"> </p>
+                            <p id='err' style="color:orange"> </p> <!-- to robi za część odstępu do przycisku kiedy jest puste ; br po tym chyba sam robi-->
                             <button type='submit' class="button" >Utwórz i wejdź</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
                             <!-- ew. przycisk anuluj -->
             </form>
-        </dev>
+        </div>
         <% for (i=0; i<roomz.length; ++i) {  %>
-            <%= roomz[i].name %> <br>
+            <div class="container">
+                <%= roomz[i].name %> <br>
+            </div>
         <% } %>
    
         <form method="POST" action="/logout">
-            <button class="button" style="float:right; width=100%;" name='logout'>Wyloguj</button>
+            <button class="button" style="float:right; width=100%;" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
         </form>
+
+
+    
 
     </body>
 

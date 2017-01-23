@@ -6,7 +6,7 @@ var express = require('express');
 
 var routerFun = function(roomz){
 
-    router.get('/', (req,res) =>{
+    router.all('/', (req,res) =>{
         var name = req.query.name;
         if(!req.session.entered)
         {

@@ -54,7 +54,7 @@ router.post('/create', (req,res) => {
         };
         roomz.set(name,newRoom);
     }
-    res.redirect('/rooms/room'+'?name='+name);
+    res.redirect('/rooms/room/'+'?name='+name);
     //res.redirect('/rooms/room=') //docelowo jakoś tak
 });
 

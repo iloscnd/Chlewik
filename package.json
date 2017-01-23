@@ -1,7 +1,7 @@
 {
   "name": "chlewik",
   "version": "1.0.0",
-  "description": "Strona z grami wielosobowym w przegladarce",
+  "description": "Strona z grami wielosobowymi w przegladarce",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/iloscnd/Chlewik/issues"
   },
-  "homepage": "https://github.com/iloscnd/Chlewik#readme"
+  "homepage": "https://github.com/iloscnd/Chlewik#readme",
+  "dependencies": {
+    "socket.io": "^1.7.2"
+  }
 }

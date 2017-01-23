@@ -23,9 +23,14 @@
 
                 
                 var req=new XMLHttpRequest();
-                var params = "?name="+valname+"&pwd="+valpwd;
-                req.open('get', '/user/ajaxValid'+params, true);
-                
+                //JAK POST TO PARAMS BEZ PYTAJNIKA NA POCZĄTKU
+                var params = "name="+valname+"&pwd="+valpwd;
+                req.open('POST', '/user/ajaxValid', true);
+                //ZMIENIONE NA POST
+                req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                req.setRequestHeader("Content-length", params.length);
+                req.setRequestHeader("Connection", "close");
+
                 req.onreadystatechange = function() {
                     if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
                         if(req.responseText == "NOONE") {
@@ -42,7 +47,7 @@
                         }
                     }
                 };
-                req.send();
+                req.send(params); //tu, jak post
                 
                 
                 return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź

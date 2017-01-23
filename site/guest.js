@@ -21,11 +21,11 @@ var guestz = new Map(); //na razie nie usuwam przy wyjściu i nie można na drug
         res.render("guestlogin.ejs");
 });
 
-router.get('/ajaxIsFree', (req,res) => {
+router.post('/ajaxIsFree', (req,res) => {
     console.log("czyWolnyNick\n");
     
     var flag = true;
-    var name = req.query.name;
+    var name = req.body.name;
     console.log(name+"\n");
     if (guestz.get(name) != undefined) flag = false;
     var resp = "";

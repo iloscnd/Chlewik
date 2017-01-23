@@ -43,9 +43,13 @@
                 }
 
                 var req=new XMLHttpRequest();
-                var params = "?name="+name;
-                req.open('get', '/user/ajaxIsFree'+params, true);
-                
+                var params = "name="+name;
+                req.open('POST', '/user/ajaxIsFree', true);
+                    //ZMIENIONE NA POST
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.setRequestHeader("Content-length", params.length);
+                    req.setRequestHeader("Connection", "close");
+                    
                 req.onreadystatechange = function() {
                     if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
                         if(req.responseText != "OK") {
@@ -60,7 +64,7 @@
                         }
                     }
                 };
-                req.send();
+                req.send(params);
                 
                 
                 return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź

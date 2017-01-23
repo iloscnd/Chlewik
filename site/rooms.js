@@ -20,14 +20,14 @@ router.all('/', (req,res) =>{
     }
 });
 
-router.get('/ajaxFormNew', (req,res) => {
+router.post('/ajaxFormNew', (req,res) => {
     //console.log("widzę\n");
     res.send("napis");
 });
 
-router.get('/ajaxIsName', (req,res) => {
+router.post('/ajaxIsName', (req,res) => {
     var flag = true;
-    var name = req.query.name;
+    var name = req.body.name; //bo post
     console.log("poszło\n");
     for (i=0; i<roomz.length; ++i) {
         console.log(name+"   "+roomz[i].name+"\n");

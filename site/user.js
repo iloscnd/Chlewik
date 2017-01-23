@@ -29,7 +29,7 @@ router.all('/enter', (req,res) =>{
     //co prawda w ten sposób sprawdza się 2 razy :/
 });
 
-router.all('/create', (req,res) =>{
+router.post('/create', (req,res) =>{
     //TODO check if not colliding data, pwd==pwd2 etc
 
 
@@ -53,11 +53,11 @@ router.all('/create', (req,res) =>{
 });
 
 
-router.get('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
+router.post('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
     console.log("czyWolny\n");
     
     var flag = true;
-    var name = req.query.name;
+    var name = req.body.name; //bo post
     console.log(name+"\n");
     if (userz.get(name) != undefined) flag = false;
     var resp = "";
@@ -66,11 +66,11 @@ router.get('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
     res.send(resp);
 });
 
-router.get('/ajaxValid', (req,res) => { //zmienić jakoś na post
+router.post('/ajaxValid', (req,res) => { //zmienić jakoś na post
     console.log("czyDobre\n");
     var flag = true;
-    var name = req.query.name;
-    var pwd = req.query.pwd;
+    var name = req.body.name; //z POST są w body a nie query
+    var pwd = req.body.pwd;
     console.log(name+"\n");
     console.log(pwd+"\n");
     
@@ -89,7 +89,7 @@ router.get('/ajaxValid', (req,res) => { //zmienić jakoś na post
 
 
 router.all("/logout",(req,res)=>{
-    var name = req.body.name;
+    var name = req.session.name;
     if(req.session.entered==1 && req.session.guest!=1) {
         req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
         res.redirect('/');

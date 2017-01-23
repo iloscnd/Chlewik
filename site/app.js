@@ -19,11 +19,13 @@ app.use( bodyParser.urlencoded({extended:true}) ) ;
 
 app.use( cookieParser() );
 
-app.use(session({
+var sessionMid = session({ //potrzebuje uzyc obiektu tez w socket
     store: new FileStore,
     secret: 'keyboard cat',
     maxAge: 60000
-}));
+})
+
+app.use(sessionMid); 
 
 app.use( express.static('./static'));
 
@@ -39,7 +41,7 @@ app.use('/rooms', roomsRouter);
 var userRouter = require('./user');
 app.use('/user', userRouter);
 
-var gameRouter = require('./game')(io);
+var gameRouter = require('./game')(io, sessionMid);
 app.use('/game',gameRouter);
 
 app.get("/", (req, res) =>{

@@ -33,12 +33,8 @@
 
                 req.onreadystatechange = function() {
                     if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
-                        if(req.responseText == "NOONE") {
-                            err.innerHTML = "niepoprawny login"
-                            
-                        }
-                        else if(req.responseText == "BAD") {
-                            err.innerHTML = "niepoprawne hasło"
+                        if(req.responseText == "BAD") {
+                            err.innerHTML = "niepoprawne dane"
                             
                         }
                         else if(req.responseText == "OK") {

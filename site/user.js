@@ -82,7 +82,7 @@ router.post('/ajaxValid', (req,res) => { //zmienić jakoś na post
         if (getPwd == pwd) resp = "OK"; else resp = "BAD";
         flag = false; 
     }
-    if (flag) resp="NOONE"; 
+    if (flag) resp="BAD"; //było NOONE, ale nie powinien mówić które źle 
     console.log(resp+"\n");
     res.send(resp);
 });

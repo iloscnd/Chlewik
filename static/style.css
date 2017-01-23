@@ -22,7 +22,8 @@ body {
     border: 5px double midnightblue; 
     padding: 15px; 
     background: royalblue;  
-    border-radius: 15px 15px 15px 15px;"
+    border-radius: 15px 15px 15px 15px;
+    display: inline-block; /*będzie się rozszerzał na dzieci swe*/
 }
 
 .button:hover {

@@ -6,6 +6,9 @@ var express = require('express');
 
 var roomz = new Map(); //czy wyżej zadziała
 
+var inroomRouter = require('./inroom')(roomz);
+router.use('/room', inroomRouter);
+
 router.all('/', (req,res) =>{
     if(!req.session.entered)
     {
@@ -51,14 +54,10 @@ router.post('/create', (req,res) => {
         };
         roomz.set(name,newRoom);
     }
-    res.redirect('/rooms');
+    res.redirect('/rooms/room'+'?name='+name);
     //res.redirect('/rooms/room=') //docelowo jakoś tak
 });
 
-router.use((req,res,next) => {
 
-    res.render('404.ejs', { url : req.url });
-
-});
 
 module.exports = router;

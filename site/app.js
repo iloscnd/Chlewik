@@ -17,22 +17,28 @@ var roomz = new Map();
 var guestz = new Map(); 
 */
 
+
+
+var sessionMid = session({
+    //store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
+    secret: 'keyboard cat',
+    maxAge: 60000
+});
+
 //io.use(function(socket,next){
 //    session(socket.request, socket.request.res, next);
 //});
+
+app.use(sessionMid);
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use( bodyParser.urlencoded({extended:true}) ) ;
 
-app.use( cookieParser() );
+//app.use( cookieParser() );
 
-app.use(session({
-    store: new FileStore,
-    secret: 'keyboard cat',
-    maxAge: 60000
-}));
+
 
 app.use( express.static('./static'));
 

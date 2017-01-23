@@ -38,7 +38,7 @@
     <center>
         Witaj w zagrodzie <%= room.name %> <br>
         <p id="pisz" syle="display:none"><%=room.name%></p> <!-- nie może być spacji jak patrzę na innerHTML -->
-        <form id='go' method="POST" action="/rooms" > <!--  -->
+        <form id='go' method="POST" action="/rooms" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
             <button class="button" style="float:right" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
         </form>
     </center>

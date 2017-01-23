@@ -33,15 +33,15 @@ var routerFun = function(roomz,io){
             socket.emit('sbd entered', room);
         });
         socket.on('disconnect', function() {
-        var roomname = inrooms.get(socket); //było ses
-        if (roomname == undefined) { console.log("OJEJKU"); return; }
-        var room = roomz.get(roomname);
-        room.people--;
-        if(room.people == 0) {
-            roomz.delete(roomname);
-        }
-        io.to(roomname).emit('sbd entered',room.people);
-    }); 
+            var roomname = inrooms.get(socket); //było ses
+            if (roomname == undefined) { console.log("OJEJKU"); return; }
+            var room = roomz.get(roomname);
+            room.people--;
+            if(room.people == 0) {
+                roomz.delete(roomname);
+            }
+            io.to(roomname).emit('sbd entered',room.people);
+        }); 
     });
     
  /*dzieją się dziwne błędy z sesjami jak próbuję w chrome albo ogólnie w 2. przeglądarce*/

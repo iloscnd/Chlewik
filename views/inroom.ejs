@@ -3,16 +3,44 @@
         <link rel="stylesheet" type="text/css" href="style.css">
 
         <title>
-            zagroda <%= room.name %>
+            pokój <%= room.name %>
         </title>
+
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/appjs.js"></script>
+        <script>
+            
+            window.addEventListener('load', function(){
+                var p = document.getElementById('pisz');
+                //p.innerHTML =  "hej" ;
+                
+                var socket = io();
+                /*var obj = {
+                    session : ses , 
+                    roomname : room.name
+                };*/
+                socket.emit('getIn', p.innerHTML);
+
+                socket.on('sbd entered', function(whatRoom) { //dbam wcześniej żeby nie undef
+                    var p = document.getElementById('pisz');
+                    p.innerHTML = whatRoom ; //whatRoom.people
+                });
+                
+            });
+
+        </script> 
+       
 
     </head>
     
 
     <body>
     <center>
-        Witaj w zagrodzie <%= room.name %>
-
+        Witaj w zagrodzie <%= room.name %> <br>
+        <p id="pisz" syle="display:none"><%=room.name%></p> <!-- nie może być spacji jak patrzę na innerHTML -->
+        <form id='go' method="POST" action="/rooms" > <!--  -->
+            <button class="button" style="float:right" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
+        </form>
     </center>
     </body>
 </html>

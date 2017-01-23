@@ -42,7 +42,7 @@ app.use('/guest', guestRouter);
 var registerRouter = require('./register');
 app.use('/register', registerRouter);
 
-var roomsRouter = require('./rooms');
+var roomsRouter = require('./rooms')(io);
 app.use('/rooms', roomsRouter);
 
 var userRouter = require('./user');

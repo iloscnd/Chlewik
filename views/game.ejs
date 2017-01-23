@@ -15,9 +15,9 @@
           </tr> <%}%>
         <% if( i % 3 == 0) {%>
           <tr> <% } %>
-      <td><input type="image" src="tictac/empty.png" id=<%=i%> ></td> <%}%>
+      <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
     </table>
-  
+    <button>reset</button>
     <script>
       var socket = io();
       
@@ -27,7 +27,24 @@
         }
       });
       
+      $('button').click(function(){
+        socket.emit('reset');
+      });
+
+      socket.on('change', function(msg){
+        if(msg[1]==0)
+          $("#"+msg[0]).attr("src","tictac/tic.png");
+        else
+           $("#"+msg[0]).attr("src","tictac/tac.png");
+      });
     
+      socket.on('clear', function(msg){
+        $("#"+msg).attr("src","tictac/empty.png");
+      });
+
+      socket.on('won', function(msg){
+        alert(msg + " wygrał!");
+      });
 
     </script>
   </body>

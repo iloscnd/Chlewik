@@ -51,7 +51,11 @@ app.get("/", (req, res) =>{
 
 app.all("/logout",(req,res)=>{
    // console.log(req.session);
-   if(req.session.guest==1) res.redirect('/guest/logout');
+   if(!req.session.entered)
+    {
+        res.redirect("/");
+    }
+   else if(req.session.guest==1) res.redirect('/guest/logout');
    else res.redirect('/user/logout'); //bez else się rzuca "can't set headers after they are sent"
     //req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
     //res.redirect('/');
@@ -59,13 +63,13 @@ app.all("/logout",(req,res)=>{
 
 
 
-
+/*
 
 app.get('/login', (req,res) =>{
     res.render('login.ejs');    
 });
 
-
+*/
 
 app.get('/test', function (req, res) {
   if (req.session.views) {

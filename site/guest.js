@@ -14,8 +14,7 @@ var FileStore = require('session-file-store')(session);
 var guestz = new Map(); //na razie nie usuwam przy wyjściu i nie można na drugiego gościa z taką samą nazwą po wylogowaniu
 
  router.get("/",(req,res) =>{
-
-    if(req.session.logged)
+    if(req.session.entered)
         res.redirect('/rooms');
     else
         res.render("guestlogin.ejs");
@@ -35,6 +34,11 @@ router.post('/ajaxIsFree', (req,res) => {
 });
 
 router.all("/enter",(req,res)=>{
+    if(req.session.entered)
+    {
+        res.redirect("/");
+        return;
+    }
     var name = req.body.name;
     console.log("wchodzę\n");
     console.log(name+"\n");
@@ -54,6 +58,11 @@ router.all("/enter",(req,res)=>{
 });
 
 router.all("/logout",(req,res)=>{
+    if(!req.session.entered)
+    {
+        res.redirect("/");
+        return;
+    }
     var name = req.session.name;
     //console.log(req.session.entered + "    " + req.session.guest + "\n");
     if(req.session.entered==1 && req.session.guest==1) {

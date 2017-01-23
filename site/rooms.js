@@ -40,6 +40,7 @@ router.post('/ajaxIsName', (req,res) => {
 });
 
 router.post('/create', (req,res) => {
+    //tu trzeba by sprawdzać czy ktoś nie jest już w pokoju
     var flag = true;
     for (i=0; i<roomz.length; ++i) {
         if (roomz[i].name == req.body.roomName) {flag = false; break; }

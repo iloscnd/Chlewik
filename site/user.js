@@ -4,15 +4,20 @@ var express = require('express');
  var router = express.Router();
  router.use( express.static('./static')); //muszę
 
-router.get('/', (req,res) =>{
-    res.redirect("/rooms");
+router.all('/', (req,res) =>{
+    res.redirect("/rooms"); //przekierowanie niezalogowanego na "/" jest w rooms
 });
 
 var userz = new Map();
 
 router.all('/enter', (req,res) =>{
     //TODO check if valid pwd etc
-
+    if(req.session.entered)
+    {
+        res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
+        return; 
+        //res.end(); //to też próbuje coś zwracać po zakończeniu
+    }
     var name = req.body.name;
     var pwd = req.body.pwd;
     console.log("wchodzę\n");
@@ -32,7 +37,11 @@ router.all('/enter', (req,res) =>{
 router.post('/create', (req,res) =>{
     //TODO check if not colliding data, pwd==pwd2 etc
 
-
+    if(req.session.entered)
+    {
+        res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
+        return; 
+    }
 
     var flag = true;
     var name = req.body.name;
@@ -89,6 +98,11 @@ router.post('/ajaxValid', (req,res) => { //zmienić jakoś na post
 
 
 router.all("/logout",(req,res)=>{
+    if(!req.session.entered)
+    {
+        res.redirect("/");
+        return;
+    }
     var name = req.session.name;
     if(req.session.entered==1 && req.session.guest!=1) {
         req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
@@ -100,6 +114,11 @@ router.all("/logout",(req,res)=>{
 });
 
 router.all("/delete",(req,res)=>{
+    if(!req.session.entered)
+    {
+        res.redirect("/");
+        return;
+    }
     var name = req.session.name;
     if(req.session.entered==1 && req.session.guest!=1) {
         userz.delete(name);

@@ -46,9 +46,12 @@ router.post('/create', (req,res) => {
         if (roomz[i].name == req.body.roomName) {flag = false; break; }
     }
     if (flag) {
+        var pwdTrimmed = req.body.pwd.trim();
+        var flag = (!(pwdTrimmed.length == 0))
         var newRoom = {
             name : req.body.roomName,
-            pwd : req.body.pwd
+            pwd : req.body.pwd,
+            hasPwd : flag
         };
         roomz.push(newRoom);
     }
@@ -57,6 +60,7 @@ router.post('/create', (req,res) => {
             roomz : roomz
     }
     res.render('roomView.ejs', model);
+    //res.redirect('/rooms/room=') //docelowo jakoś tak
 });
 
 router.use((req,res,next) => {

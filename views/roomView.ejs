@@ -110,18 +110,19 @@
         </div>
         <% for (i=0; i<roomz.length; ++i) {  %>
             <div class="container">
-                <%= roomz[i].name %> <br>
+                <%= roomz[i].name %> <br> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
             </div>
         <% } %>
-   
+<!-- TODO dodać przycisk odświeżenia, który zmodyfikuje kawałek html z tym forem, żeby ajax i nowe pokoje i w ogóle -->   
         <form id='out' method="POST" action="/logout"> <!-- action="/logout"-->
             <button class="button" style="float:right" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
         </form>
 
         <% if (ses.guest==0) { %> 
             <form id='clear' method="POST" action="/user/delete"> <!--  -->
-                <button class="button" style="float:right" name='logout'>Usuń konto bez pytania</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
+                <button class="button" style="float:right" name='logout'>Usuń konto bez pytania</button> 
             </form>
+<!-- TODO !!! DOCELOWO TU USTAWIENIA KONTA - ZMIANA HASŁA I USUŃ I DO OBU WYMAGANE HASŁO -->
         <% } %>
 
     </body>

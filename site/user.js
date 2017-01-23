@@ -8,7 +8,7 @@ router.all('/', (req,res) =>{
     res.redirect("/rooms"); //przekierowanie niezalogowanego na "/" jest w rooms
 });
 
-var userz = new Map();
+var userz = new Map(); //czy wyżej zadziałą
 
 router.all('/enter', (req,res) =>{
     //TODO check if valid pwd etc

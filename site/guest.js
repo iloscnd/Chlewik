@@ -11,7 +11,7 @@ var FileStore = require('session-file-store')(session);
 
 //innych middleware jakoś nie muszę powielać
 
-var guestz = new Map(); //na razie nie usuwam przy wyjściu i nie można na drugiego gościa z taką samą nazwą po wylogowaniu
+var guestz = new Map(); //czy wyżej zadziała
 
  router.get("/",(req,res) =>{
     if(req.session.entered)

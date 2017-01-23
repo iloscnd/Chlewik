@@ -9,8 +9,11 @@ var FileStore = require('session-file-store')(session);
 var app = express();
 var server = http.createServer(app);
 
-
-
+/* //nie zadziała - ustawić app.locals, czy coś
+var userz = new Map();
+var roomz = new Map();
+var guestz = new Map(); 
+*/
 
 app.set('view engine', 'ejs');
 app.set('views', './views');

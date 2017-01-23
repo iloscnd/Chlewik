@@ -4,7 +4,7 @@ var express = require('express');
  var router = express.Router();
  router.use( express.static('./static')); //muszę
 
-var roomz = [];
+var roomz = new Map(); //czy wyżej zadziała
 
 router.all('/', (req,res) =>{
     if(!req.session.entered)
@@ -29,10 +29,7 @@ router.post('/ajaxIsName', (req,res) => {
     var flag = true;
     var name = req.body.name; //bo post
     console.log("poszło\n");
-    for (i=0; i<roomz.length; ++i) {
-        console.log(name+"   "+roomz[i].name+"\n");
-        if (roomz[i].name == name) {flag = false; break; }
-    }
+    if (roomz.get(name) != undefined) flag = false;
     var resp = "";
     if (flag) resp="OK"; else resp="NO";
     console.log(resp+"\n");
@@ -42,9 +39,8 @@ router.post('/ajaxIsName', (req,res) => {
 router.post('/create', (req,res) => {
     //tu trzeba by sprawdzać czy ktoś nie jest już w pokoju
     var flag = true;
-    for (i=0; i<roomz.length; ++i) {
-        if (roomz[i].name == req.body.roomName) {flag = false; break; }
-    }
+    var name = req.body.roomName;
+    if (roomz.get(name) != undefined) flag = false;
     if (flag) {
         var pwdTrimmed = req.body.pwd.trim();
         var flag = (!(pwdTrimmed.length == 0))
@@ -53,13 +49,9 @@ router.post('/create', (req,res) => {
             pwd : req.body.pwd,
             hasPwd : flag
         };
-        roomz.push(newRoom);
+        roomz.set(name,newRoom);
     }
-    var model = {
-            ses : req.session,
-            roomz : roomz
-    }
-    res.render('roomView.ejs', model);
+    res.redirect('/rooms');
     //res.redirect('/rooms/room=') //docelowo jakoś tak
 });
 

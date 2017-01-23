@@ -108,13 +108,14 @@
                             <!-- ew. przycisk anuluj -->
             </form>
         </div>
-        <% for (i=0; i<roomz.length; ++i) {  %>
+        <% roomz.forEach( (value, key, map) => { %>   <!-- czemu domyślny iterator je zwraca w tak głupiej kolejności... -->
             <div class="container">
-                <%= roomz[i].name %> <br> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
+                <%= value.name %> <br> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
             </div>
-        <% } %>
+        <% }); %>
+
 <!-- TODO dodać przycisk odświeżenia, który zmodyfikuje kawałek html z tym forem, żeby ajax i nowe pokoje i w ogóle -->
-   
+
         <form id='out' method="POST" action="/logout"> <!-- action="/logout"-->
             <button class="button" style="float:right" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
         </form>

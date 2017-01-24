@@ -56,6 +56,7 @@ var routerFun = function(roomz,io){
             var unm = socket.request.session.name;
             if (rnm == undefined) { console.log("OJEJKU"); return; }
             var room = roomz.get(rnm);
+            if (room == undefined) { console.log("ŁOJENY"); return; } //czemu to się dzieje?
             room.people--;
             if(room.people == 0) {
                 roomz.delete(rnm);
@@ -81,8 +82,9 @@ var routerFun = function(roomz,io){
         if (r == undefined) { res.redirect('/rooms'); console.log("ojej"); return; }
         if (r.hasPwd) {
             var pwd = req.session.roomPwd;
-            if (r.pwd != pwd) { res.redirect('/rooms'); return; }   //to wszystko powinien być ajax z roomView, no ale jak pytać o wpisane w pole które może nie istnieć... EDIT - nie wyświetlać pola, a istnieje
+            if (r.pwd != pwd) { console.log("ZŁE HASŁO"); res.redirect('/rooms?err=pwd'); return; }   //to wszystko powinien być ajax z roomView, no ale jak pytać o wpisane w pole które może nie istnieć... EDIT - nie wyświetlać pola, a istnieje
         }
+        if (r.people == 2) { console.log("PEŁEN"); res.redirect('/rooms?err=crowded'); return; } //TYLKO DLA DWUOSOBOWYCH
         var model = {
             room : r,
             ses : req.session
@@ -91,6 +93,7 @@ var routerFun = function(roomz,io){
         res.render('inroom.ejs', model);
     });
 
+    
 
     return router;
 }

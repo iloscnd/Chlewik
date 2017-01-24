@@ -21,6 +21,8 @@
     <script>
       var socket = io();
       
+      socket.emit('gotInGame');
+
       $('input').click(function(){
         if( $(this).attr("src") == "tictac/empty.png"){
           socket.emit('FieldClicked', $(this).attr("id")  );
@@ -44,6 +46,7 @@
 
       socket.on('won', function(msg){
         alert(msg + " wygrał!");
+        window.location = "/rooms";
       });
 
     </script>

@@ -27,7 +27,7 @@ var returnRouter = function(io) {
     });
 
 
-    
+    //na arzie emitowane do wszystkich, trzeba zmienić ż etu wtyczki też w pokoju
     io.on('connection', function(socket){
        // console.log(socket);
        // console.log('A socket with sessionID ' + socket.client.id + ' connected!');
@@ -38,12 +38,26 @@ var returnRouter = function(io) {
             if(!player[1] && player[0] != socket.request.session.name)
                 player[1] = socket.request.session.name;
 
+        socket.on('gotInGame', function() {
+            var rnm = socket.request.session.roomEntered;
+            var unm = socket.request.session.name;
+            console.log("W grze "+unm);
+            //console.log(ses);
+            //var name = ses.roomname;
+            //var session = ses.session;
+            
+            socket.join(rnm+"_game");
+            
+            //io.to(roomname+"_game").emit('sbd entered',room.people);
+
+        });
+
         socket.on('FieldClicked',function(msg){
            // console.log("Socket with id " + socket.client.id +" and name " + socket.request.session.name +  " clicked filed number " + msg);
-            
+            var rnm = socket.request.session.roomEntered;
             if(state[msg] == 0 && !end){
                 if(player[turn%2] == socket.request.session.name){
-                    io.emit('change',[msg,turn%2]);
+                    io./*to(rnm+"_game").*/emit('change',[msg,turn%2]);
                     state[msg] = turn%2 + 1;
                     turn++;
                     //check if won
@@ -62,7 +76,7 @@ var returnRouter = function(io) {
                     
                     if(won){
                         //console.log(state);
-                        io.emit('won', socket.request.session.name);
+                        io.to(rnm+"_game").emit('won', socket.request.session.name);
                         end = 1;
                     }
                 }
@@ -71,8 +85,9 @@ var returnRouter = function(io) {
         });
 
         socket.on('reset', function(msg){
+            var rnm = socket.request.session.roomEntered;
             for(i=0; i<9; i++){
-                io.emit('clear',i)
+                io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
                 state[i] = 0;
             }
             end = 0;

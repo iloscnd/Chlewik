@@ -11,8 +11,15 @@ var routerFun = function(io) {
     
     var inroomRouter = require('./inroom')(roomz,io);
     router.use('/room', inroomRouter);
-
+    
     router.all('/', (req,res) =>{
+        var err = req.query.err;
+        var errWhat;
+        console.log("tu jestem");
+        console.log(err);
+        if (err == "pwd") { console.log("WIDZĘ ZŁE HASŁO"); errWhat = "pwd";}
+        else if (err == "crowded") { console.log("WIDZĘ PEŁEN"); errWhat = "crowded"; }
+        else errWhat = "";
         if(!req.session.entered)
         {
             res.redirect("/");
@@ -20,7 +27,8 @@ var routerFun = function(io) {
         else {
             var model = {
                 ses : req.session,
-                roomz : roomz
+                roomz : roomz,
+                error : errWhat
             }
             res.render('roomView.ejs',model);
         }

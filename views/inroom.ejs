@@ -24,7 +24,7 @@
 
                 socket.on('sbd entered', function(whatRoom) { //dbam wcześniej żeby nie undef
                     var p = document.getElementById('pisz');
-                    p.innerHTML = whatRoom ; //whatRoom.people
+                    p.innerHTML = whatRoom ; // TU LEPIEJ ZMIENIĆ, ŻEBY BYŁA JAKAŚ FUNKCJA ODŚWIEŻ STAN CAŁEGO POKOJU I GRY POTEM
                 });
                 
             });
@@ -43,6 +43,7 @@
             <button class="button" style="float:right" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
         </form>
     </center>
+
     </body>
 </html>
 

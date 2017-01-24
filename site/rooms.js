@@ -47,6 +47,7 @@ var routerFun = function(io) {
         var flag = true;
         var name = req.body.roomName;
         if (roomz.get(name) != undefined) flag = false;
+        req.session.roomPwd = req.body.pwd; //?
         if (flag) {
             var pwdTrimmed = req.body.pwd.trim();
             var flag = (!(pwdTrimmed.length == 0))
@@ -62,9 +63,16 @@ var routerFun = function(io) {
         //res.redirect('/rooms/room=') //docelowo jakoś tak
     });
 
+    router.post('/setSessionPwd', (req,res) => { //post
+        var name = req.query.name;
+        var pwd = req.body.roomPwd;
+        req.session.roomPwd = pwd;
+        res.redirect('/rooms/room/'+'?name='+name);
+    });
+
     return router;
 }
 
-
+//PO WYJŚCIU Z POKOJU CZASEM POKAZUJE ŻE ISTNIEJE, BO NIE ZDĄŻY MU ZMIENIĆ - w chrome, w firefox nie
 
 module.exports = routerFun;

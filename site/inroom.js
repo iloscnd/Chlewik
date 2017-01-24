@@ -55,11 +55,17 @@ var routerFun = function(roomz,io){
             res.redirect("/");
             return;
         }
+        var r = roomz.get(name)
+        if (r == undefined) { res.redirect('/rooms'); console.log("ojej"); return; }
+        if (r.hasPwd) {
+            var pwd = req.session.roomPwd;
+            if (r.pwd != pwd) { res.redirect('/rooms'); return; }   //to wszystko powinien być ajax z roomView, no ale jak pytać o wpisane w pole które może nie istnieć... EDIT - nie wyświetlać pola, a istnieje
+        }
         var model = {
-            room : roomz.get(name),
+            room : r,
             ses : req.session
         }
-        console.log("!!!"+roomz.get(name).name);
+        console.log("!!!"+r.name);
         res.render('inroom.ejs', model);
     });
 

@@ -111,7 +111,11 @@
         <% roomz.forEach( (value, key, map) => { %>   <!-- czemu domyślny iterator je zwraca w tak głupiej kolejności... -->
             <div class="container">
                 <%= value.name %> <br> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
-                <form id='go' method="POST" action="/rooms/room/?name=<%= value.name %>" > <!--  -->
+                
+                <form id='go' method="POST" action="/rooms/setSessionPwd/?name=<%= value.name %>" > <!--  -->
+                    <% if (value.hasPwd) { %>
+                        Hasło: <input type='text' id="roomPwd" name='roomPwd' style="float:left ; width:100%">
+                    <% } %>
                     <button class="button" style="float:right" name='logout'>Wnijdź do pokoju</button> 
                 </form>
             </div>

@@ -32,6 +32,8 @@ var returnRouter = function(io) {
        // console.log(socket);
        // console.log('A socket with sessionID ' + socket.client.id + ' connected!');
 
+
+
         if(!player[0])
             player[0] = socket.request.session.name;
         else
@@ -48,6 +50,11 @@ var returnRouter = function(io) {
             
             socket.join(rnm+"_game");
             
+            
+            socket.emit('user_connected', {name:player[0], id:"p1" })
+            socket.emit('user_connected', {name:player[1], id:"p2" })
+
+
             //io.to(roomname+"_game").emit('sbd entered',room.people);
 
         });

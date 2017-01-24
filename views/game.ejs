@@ -18,6 +18,8 @@
       <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
     </table>
     <button>reset</button>
+    <p id="p1">none</p><br>
+    <p id="p2">none</p><br>
     <script>
       var socket = io();
       
@@ -43,6 +45,10 @@
       socket.on('clear', function(msg){
         $("#"+msg).attr("src","tictac/empty.png");
       });
+
+      socket.on('user_connected', function(msg){
+        $("#"+msg.id).text(msg.name);
+      })
 
       socket.on('won', function(msg){
         alert(msg + " wygrał!");

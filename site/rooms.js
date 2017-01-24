@@ -48,6 +48,7 @@ var routerFun = function(io) {
         var name = req.body.roomName;
         if (roomz.get(name) != undefined) flag = false;
         req.session.roomPwd = req.body.pwd; //?
+        req.session.roomEntered = name;
         if (flag) {
             var pwdTrimmed = req.body.pwd.trim();
             var flag = (!(pwdTrimmed.length == 0))
@@ -67,6 +68,7 @@ var routerFun = function(io) {
         var name = req.query.name;
         var pwd = req.body.roomPwd;
         req.session.roomPwd = pwd;
+        req.session.roomEntered = name;
         res.redirect('/rooms/room/'+'?name='+name);
     });
 

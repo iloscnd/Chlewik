@@ -6,7 +6,7 @@ router.use( express.static('./static'));
 
 
 
-var returnRouter = function(io,session) {
+var returnRouter = function(io) {
 
     var state = [0,0,0,0,0,0,0,0,0];
     var player = [undefined, undefined];
@@ -26,11 +26,6 @@ var returnRouter = function(io,session) {
             res.render('game.ejs',{state : state, srcs:srcs});
     });
 
-
-
-    io.use(function(socket, next){
-        session(socket.request, socket.request.res, next); //wtedy moge sie dostac do sesji w socket
-    });
 
     
     io.on('connection', function(socket){

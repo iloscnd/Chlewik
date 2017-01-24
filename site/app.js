@@ -29,11 +29,13 @@ app.use( bodyParser.urlencoded({extended:true}) ) ;
 app.use( cookieParser() );
 
 var sessionMid = session({
-    store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
+    //store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
     secret: 'keyboard cat',
     maxAge: 60000
 });
-
+io.use(function(socket, next){
+    sessionMid(socket.request, socket.request.res, next); //wtedy moge sie dostac do sesji w socket
+});
 app.use(sessionMid);
 
 app.use( express.static('./static'));
@@ -50,7 +52,7 @@ app.use('/rooms', roomsRouter);
 var userRouter = require('./user');
 app.use('/user', userRouter);
 
-var gameRouter = require('./game')(io, sessionMid);
+var gameRouter = require('./game')(io);
 app.use('/game',gameRouter);
 
 app.get("/", (req, res) =>{

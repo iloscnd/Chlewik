@@ -8,14 +8,20 @@ var inrooms = new Map();
 
 var routerFun = function(roomz,io){
 
+    //io.use(function(socket, next){
+    //    session(socket.request, socket.request.res, next); //wtedy moge sie dostac do sesji w socket
+    //});
+
     io.on('connection', function(socket) {
         console.log('connected in room');
-        socket.on('getIn', function(rn) { //rn to na razie nazwa pokoju
-            console.log("Jestem "+rn);
+        socket.on('getIn', function() { //rn to na razie nazwa pokoju
+            
+            var rnm = socket.request.session.roomEntered;
+            console.log("Jestem "+rnm);
             //console.log(ses);
             //var name = ses.roomname;
             //var session = ses.session;
-            var room = roomz.get(rn); 
+            var room = roomz.get(rnm); 
             if (room == undefined) { console.log("OJEJ");  return;}
             var roomname = room.name;
             socket.join(roomname);

@@ -9,6 +9,7 @@ var FileStore = require('session-file-store')(session);
 var app = express();
 var server = http.createServer(app);
 
+<<<<<<< HEAD
 var io = require('socket.io')(server);
 
 /* //nie zadziała - ustawić app.locals, czy coś
@@ -16,6 +17,9 @@ var userz = new Map();
 var roomz = new Map();
 var guestz = new Map(); 
 */
+=======
+var io = require('socket.io')(server)
+>>>>>>> 5683d58e7f9f9c859bb306b7ee65ff381d7e05c8
 
 
 
@@ -39,6 +43,16 @@ app.use( bodyParser.urlencoded({extended:true}) ) ;
 //app.use( cookieParser() );
 
 
+<<<<<<< HEAD
+=======
+var sessionMid = session({ //potrzebuje uzyc obiektu tez w socket
+    store: new FileStore,
+    secret: 'keyboard cat',
+    maxAge: 60000
+})
+
+app.use(sessionMid); 
+>>>>>>> 5683d58e7f9f9c859bb306b7ee65ff381d7e05c8
 
 app.use( express.static('./static'));
 
@@ -53,6 +67,9 @@ app.use('/rooms', roomsRouter);
 
 var userRouter = require('./user');
 app.use('/user', userRouter);
+
+var gameRouter = require('./game')(io, sessionMid);
+app.use('/game',gameRouter);
 
 app.get("/", (req, res) =>{
     if(req.session.entered)

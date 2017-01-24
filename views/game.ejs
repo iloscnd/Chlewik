@@ -1,0 +1,51 @@
+
+<html>
+  <head>
+    <title>Kółko i krzyżyk</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    
+  <body>
+      <table>
+      <% for(i = 0; i < 9; i++) {%>
+        <% if( i % 3 == 0 && i > 0) {%>
+          </tr> <%}%>
+        <% if( i % 3 == 0) {%>
+          <tr> <% } %>
+      <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
+    </table>
+    <button>reset</button>
+    <script>
+      var socket = io();
+      
+      $('input').click(function(){
+        if( $(this).attr("src") == "tictac/empty.png"){
+          socket.emit('FieldClicked', $(this).attr("id")  );
+        }
+      });
+      
+      $('button').click(function(){
+        socket.emit('reset');
+      });
+
+      socket.on('change', function(msg){
+        if(msg[1]==0)
+          $("#"+msg[0]).attr("src","tictac/tic.png");
+        else
+           $("#"+msg[0]).attr("src","tictac/tac.png");
+      });
+    
+      socket.on('clear', function(msg){
+        $("#"+msg).attr("src","tictac/empty.png");
+      });
+
+      socket.on('won', function(msg){
+        alert(msg + " wygrał!");
+      });
+
+    </script>
+  </body>
+</html>

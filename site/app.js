@@ -9,50 +9,32 @@ var FileStore = require('session-file-store')(session);
 var app = express();
 var server = http.createServer(app);
 
-<<<<<<< HEAD
-var io = require('socket.io')(server);
-
-/* //nie zadziała - ustawić app.locals, czy coś
-var userz = new Map();
-var roomz = new Map();
-var guestz = new Map(); 
-*/
-=======
 var io = require('socket.io')(server)
->>>>>>> 5683d58e7f9f9c859bb306b7ee65ff381d7e05c8
 
 
 
-var sessionMid = session({
-    //store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
-    secret: 'keyboard cat',
-    maxAge: 60000
-});
+
 
 //io.use(function(socket,next){
 //    session(socket.request, socket.request.res, next);
 //});
 
-app.use(sessionMid);
+
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use( bodyParser.urlencoded({extended:true}) ) ;
 
-//app.use( cookieParser() );
+app.use( cookieParser() );
 
-
-<<<<<<< HEAD
-=======
-var sessionMid = session({ //potrzebuje uzyc obiektu tez w socket
-    store: new FileStore,
+var sessionMid = session({
+    store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
     secret: 'keyboard cat',
     maxAge: 60000
-})
+});
 
-app.use(sessionMid); 
->>>>>>> 5683d58e7f9f9c859bb306b7ee65ff381d7e05c8
+app.use(sessionMid);
 
 app.use( express.static('./static'));
 

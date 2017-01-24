@@ -29,7 +29,7 @@ app.use( bodyParser.urlencoded({extended:true}) ) ;
 app.use( cookieParser() );
 
 var sessionMid = session({
-    //store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
+    store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
     secret: 'keyboard cat',
     maxAge: 60000
 });

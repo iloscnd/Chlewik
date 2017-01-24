@@ -37,7 +37,8 @@ var returnRouter = function(io) {
         else
             if(!player[1] && player[0] != socket.request.session.name)
                 player[1] = socket.request.session.name;
-
+        
+        end = 0;
         socket.on('gotInGame', function() {
             var rnm = socket.request.session.roomEntered;
             var unm = socket.request.session.name;

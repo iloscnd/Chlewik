@@ -65,7 +65,7 @@ var returnRouter = function(io) {
             var rnm = socket.request.session.roomEntered;
             if(state[msg] == 0 && !end){
                 if(player[turn%2] == socket.request.session.name){
-                    io./*to(rnm+"_game").*/emit('change',[msg,turn%2]);
+                    io.to(rnm+"_game").emit('change',[msg,turn%2]);
                     state[msg] = turn%2 + 1;
                     turn++;
                     //check if won

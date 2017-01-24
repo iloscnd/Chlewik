@@ -34,10 +34,12 @@ var routerFun = function(io) {
         }
     });
 
-    router.post('/ajaxFormNew', (req,res) => {
+     //bez sensu..., że muszę pytać w tę i z powrotem jak chcę tylko wyświetlić wiem co
+    router.all('/ajaxFormNew', (req,res) => {
         //console.log("widzę\n");
         res.send("napis");
     });
+    
 
     router.post('/ajaxIsName', (req,res) => {
         var flag = true;

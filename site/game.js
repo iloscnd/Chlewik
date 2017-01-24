@@ -76,7 +76,14 @@ var returnRouter = function(io) {
                     
                     if(won){
                         //console.log(state);
+                        /*for(i=0; i<9; i++){
+                            //io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
+                            state[i] = 0; //i tak nie starczy chyba do nowej gry??
+                        }*/
+                        state = [0,0,0,0,0,0,0,0,0]; //dla jednej gry
+                        player = [undefined, undefined];
                         io.to(rnm+"_game").emit('won', socket.request.session.name);
+                        
                         end = 1;
                     }
                 }
@@ -86,10 +93,7 @@ var returnRouter = function(io) {
 
         socket.on('reset', function(msg){
             var rnm = socket.request.session.roomEntered;
-            for(i=0; i<9; i++){
-                io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
-                state[i] = 0;
-            }
+            
             end = 0;
         });
 

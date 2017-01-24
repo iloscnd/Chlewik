@@ -17,13 +17,14 @@
             var newBt = document.getElementById('newRoomBt');
             var newForm = document.getElementById('newRoomForm');
             newBt.addEventListener('click', function(){
-                var req=new XMLHttpRequest();
+                var req=new XMLHttpRequest(); //muszę słać sztuczne żądanie, żeby działało
                 req.open('get', '/rooms/ajaxFormNew', true);
                 req.onreadystatechange = function() {
                     if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
-                        newBt.style = "display:none";
+                        
                         newBt.innerHTML = req.responseText;
-                        newForm.style="float:left"// ; width:100%; height:100%";
+                        newBt.setAttribute("style", "display:none"); //tak napisane wszystko rozumie
+                        newForm.setAttribute("style", "float:left");// ; width:100%; height:100%";
                     }
                 }
                 req.send(); //oczywiście przed końcem funkcji przycisku

@@ -56,7 +56,9 @@ var routerFun = function(io) {
                 name : req.body.roomName,
                 pwd : req.body.pwd,
                 hasPwd : flag,
-                people : 0 //socket ogarnia liczby
+                people : 0, //socket ogarnia liczby
+                unready : new Map(),
+                ready : new Map()
             };
             roomz.set(name,newRoom);
         }

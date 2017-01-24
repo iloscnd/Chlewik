@@ -101,7 +101,10 @@ var returnRouter = function(io) {
 
         socket.on('reset', function(msg){
             var rnm = socket.request.session.roomEntered;
-            
+            for(i=0; i<9; i++){
+                io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
+                state[i] = 0; //i tak nie starczy chyba do nowej gry??
+            }
             end = 0;
         });
 

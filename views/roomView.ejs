@@ -49,9 +49,12 @@
                 }
 
                 var req=new XMLHttpRequest();
-                var params = "?name="+name;
-                req.open('get', '/rooms/ajaxIsName'+params, true);
-                
+                var params = "name="+name;
+                req.open('POST', '/rooms/ajaxIsName', true);
+                    //ZMIENIONE NA POST
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.setRequestHeader("Content-length", params.length);
+                    req.setRequestHeader("Connection", "close");
                 req.onreadystatechange = function() {
                     if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
                         if(req.responseText != "OK") {
@@ -66,7 +69,7 @@
                         }
                     }
                 }
-                req.send();
+                req.send(params);
                 /* //to jakby było synchronicznie
                 if(req.responseText != "OK") {
                     if (flag == false) document.getElementById('err').innerHTML += "<br>";
@@ -105,20 +108,30 @@
                             <!-- ew. przycisk anuluj -->
             </form>
         </div>
-        <% for (i=0; i<roomz.length; ++i) {  %>
+        <% roomz.forEach( (value, key, map) => { %>   <!-- czemu domyślny iterator je zwraca w tak głupiej kolejności... -->
             <div class="container">
-                <%= roomz[i].name %> <br>
+                <%= value.name %> <br> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
+                
+                <form id='go' method="POST" action="/rooms/setSessionPwd/?name=<%= value.name %>" > <!--  -->
+                    <% if (value.hasPwd) { %>
+                        Hasło: <input type='text' id="roomPwd" name='roomPwd' style="float:left ; width:100%">
+                    <% } %>
+                    <button class="button" style="float:right" name='logout'>Wnijdź do pokoju</button> 
+                </form>
             </div>
-        <% } %>
-   
+        <% }); %>
+
+<!-- TODO dodać przycisk odświeżenia, który zmodyfikuje kawałek html z tym forem, żeby ajax i nowe pokoje i w ogóle -->
+
         <form id='out' method="POST" action="/logout"> <!-- action="/logout"-->
             <button class="button" style="float:right" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
         </form>
 
         <% if (ses.guest==0) { %> 
             <form id='clear' method="POST" action="/user/delete"> <!--  -->
-                <button class="button" style="float:right" name='logout'>Usuń konto bez pytania</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
+                <button class="button" style="float:right" name='logout'>Usuń konto bez pytania</button> 
             </form>
+<!-- TODO !!! DOCELOWO TU USTAWIENIA KONTA - ZMIANA HASŁA I USUŃ I DO OBU WYMAGANE HASŁO -->
         <% } %>
 
     </body>

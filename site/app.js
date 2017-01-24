@@ -9,21 +9,36 @@ var FileStore = require('session-file-store')(session);
 var app = express();
 var server = http.createServer(app);
 
+var io = require('socket.io')(server);
+
+/* //nie zadziała - ustawić app.locals, czy coś
+var userz = new Map();
+var roomz = new Map();
+var guestz = new Map(); 
+*/
 
 
+
+var sessionMid = session({
+    //store: new FileStore, //TO PSUŁO I GENEROWAŁO PORYPANE BŁĘDY
+    secret: 'keyboard cat',
+    maxAge: 60000
+});
+
+//io.use(function(socket,next){
+//    session(socket.request, socket.request.res, next);
+//});
+
+app.use(sessionMid);
 
 app.set('view engine', 'ejs');
 app.set('views', './views');
 
 app.use( bodyParser.urlencoded({extended:true}) ) ;
 
-app.use( cookieParser() );
+//app.use( cookieParser() );
 
-app.use(session({
-    store: new FileStore,
-    secret: 'keyboard cat',
-    maxAge: 60000
-}));
+
 
 app.use( express.static('./static'));
 
@@ -33,7 +48,7 @@ app.use('/guest', guestRouter);
 var registerRouter = require('./register');
 app.use('/register', registerRouter);
 
-var roomsRouter = require('./rooms');
+var roomsRouter = require('./rooms')(io);
 app.use('/rooms', roomsRouter);
 
 var userRouter = require('./user');
@@ -51,7 +66,11 @@ app.get("/", (req, res) =>{
 
 app.all("/logout",(req,res)=>{
    // console.log(req.session);
-   if(req.session.guest==1) res.redirect('/guest/logout');
+   if(!req.session.entered)
+    {
+        res.redirect("/");
+    }
+   else if(req.session.guest==1) res.redirect('/guest/logout');
    else res.redirect('/user/logout'); //bez else się rzuca "can't set headers after they are sent"
     //req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
     //res.redirect('/');
@@ -59,13 +78,13 @@ app.all("/logout",(req,res)=>{
 
 
 
-
+/*
 
 app.get('/login', (req,res) =>{
     res.render('login.ejs');    
 });
 
-
+*/
 
 app.get('/test', function (req, res) {
   if (req.session.views) {

@@ -16,23 +16,35 @@
                     err.innerHTML = "";
                     
                     var valname = guestName.value.trim();
+                    var flag = true;
+                    if (valname == "")
+                    {
+                        err.innerHTML += "nick nie może być pusty";
+                        flag = false;
+                    }
                     
                     var req=new XMLHttpRequest();
-                    var params = "?name="+valname;
-                    req.open('get', '/guest/ajaxIsFree'+params, true);
-                    
+                    var params = "name="+valname;
+                    //JAK POST TO PARAMS BEZ PYTAJNIKA NA POCZĄTKU
+                    req.open('POST', '/guest/ajaxIsFree', true);
+                    //ZMIENIONE NA POST
+                    req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    req.setRequestHeader("Content-length", params.length);
+                    req.setRequestHeader("Connection", "close");
+
                     req.onreadystatechange = function() {
                         if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
                             if(req.responseText == "NO") {
-                                err.innerHTML = "zajęty nick"
+                                if (!flag) err.innerHTML += "<br>";
+                                err.innerHTML += "zajęty nick";
                             }
-                            else if(req.responseText == "OK") {
+                            else if(flag == true && req.responseText == "OK") {
                                 //err.innerHTML += "coś jest nie tak" //już ok
                                 if(guestName.value.trim()==valname) form.submit(); //jeśli przez czas asynchr. nic nie zmienił
                             }
                         }
                     };
-                    req.send();
+                    req.send(params); //tu, jak post
                     
                     
                     return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź

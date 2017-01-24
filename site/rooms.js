@@ -11,8 +11,15 @@ var routerFun = function(io) {
     
     var inroomRouter = require('./inroom')(roomz,io);
     router.use('/room', inroomRouter);
-
+    
     router.all('/', (req,res) =>{
+        var err = req.query.err;
+        var errWhat;
+        console.log("tu jestem");
+        console.log(err);
+        if (err == "pwd") { console.log("WIDZĘ ZŁE HASŁO"); errWhat = "pwd";}
+        else if (err == "crowded") { console.log("WIDZĘ PEŁEN"); errWhat = "crowded"; }
+        else errWhat = "";
         if(!req.session.entered)
         {
             res.redirect("/");
@@ -20,7 +27,8 @@ var routerFun = function(io) {
         else {
             var model = {
                 ses : req.session,
-                roomz : roomz
+                roomz : roomz,
+                error : errWhat
             }
             res.render('roomView.ejs',model);
         }
@@ -48,6 +56,7 @@ var routerFun = function(io) {
         var name = req.body.roomName;
         if (roomz.get(name) != undefined) flag = false;
         req.session.roomPwd = req.body.pwd; //?
+        req.session.roomEntered = name;
         if (flag) {
             var pwdTrimmed = req.body.pwd.trim();
             var flag = (!(pwdTrimmed.length == 0))
@@ -55,7 +64,9 @@ var routerFun = function(io) {
                 name : req.body.roomName,
                 pwd : req.body.pwd,
                 hasPwd : flag,
-                people : 0 //socket ogarnia liczby
+                people : 0, //socket ogarnia liczby
+                unready : new Map(),
+                ready : new Map()
             };
             roomz.set(name,newRoom);
         }
@@ -67,6 +78,7 @@ var routerFun = function(io) {
         var name = req.query.name;
         var pwd = req.body.roomPwd;
         req.session.roomPwd = pwd;
+        req.session.roomEntered = name;
         res.redirect('/rooms/room/'+'?name='+name);
     });
 

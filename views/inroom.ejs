@@ -20,11 +20,21 @@
                     session : ses , 
                     roomname : room.name
                 };*/
-                socket.emit('getIn', p.innerHTML); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
+                socket.emit('getIn'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
 
                 socket.on('sbd entered', function(whatRoom) { //dbam wcześniej żeby nie undef
                     var p = document.getElementById('pisz');
                     p.innerHTML = whatRoom ; // TU LEPIEJ ZMIENIĆ, ŻEBY BYŁA JAKAŚ FUNKCJA ODŚWIEŻ STAN CAŁEGO POKOJU I GRY POTEM
+                });
+
+                var btReady = document.getElementById('ready');
+                btReady.addEventListener('click', function() {
+
+                    socket.emit('ready');
+                });
+
+                socket.on('begin game', function() {
+                    window.location = "/game";
                 });
                 
             });
@@ -38,7 +48,10 @@
     <body>
     <center>
         Witaj w zagrodzie <%= room.name %> <br>
+        Gra rozpoczyna się automatycznie, gdy wszyscy są gotowi <br>
         <p id="pisz"><%=room.name%></p> <!-- nie może być spacji jak patrzę na innerHTML ; zrobić lepiej osobny niewidoczny-->
+        <button class="button" id="ready">Potwierdź gotowość do gry</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
+        
         <form id='go' method="POST" action="/rooms" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
             <button class="button" style="float:right" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
         </form>

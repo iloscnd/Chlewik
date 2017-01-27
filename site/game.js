@@ -4,7 +4,20 @@ var router = express.Router();
 
 router.use( express.static('./static'));
 
+//sprawdzenie poziomu uprawnień - 
+//starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
+//i tak by starczyło, bo je przechodzi po kolei
+//!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
+  /// !! tu jest problem, bo trzeba w funkcji też sprawdzać czy nazwa pokojogry się zgadza - ew. nazwę czytać z sesji i tyle
+router.use('/', (req,res,next) => {
+    var ses = req.session;
+    if (!ses.legit.inGame) { 
+        res.redirect('/'); 
+        return; 
+    }
 
+    next();
+});
 
 var returnRouter = function(io) {
 
@@ -14,15 +27,19 @@ var returnRouter = function(io) {
     var srcs = ["tictac/empty.png","tictac/tic.png","tictac/tac.png"]
     var end = 0;
 
-    router.get('/', function(req, res){
-        
-       
+    
 
-        if(!req.session.entered)
+    router.get('/', function(req, res){
+
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+/*
+        if(!req.session.legit.entered)
         {
             res.redirect("/");
         }
-        else
+        else*/
             res.render('game.ejs',{state : state, srcs:srcs});
     });
 
@@ -30,7 +47,7 @@ var returnRouter = function(io) {
     //na arzie emitowane do wszystkich, trzeba zmienić ż etu wtyczki też w pokoju
     io.on('connection', function(socket){
        // console.log(socket);
-       // console.log('A socket with sessionID ' + socket.client.id + ' connected!');
+       console.log('A socket with sessionID ' + socket.client.id + ' connected!');
 
 
 
@@ -42,7 +59,7 @@ var returnRouter = function(io) {
         
         end = 0;
         socket.on('gotInGame', function() {
-            var rnm = socket.request.session.roomEntered;
+            var rnm = socket.request.session.legit.roomEntered;
             var unm = socket.request.session.name;
             console.log("W grze "+unm);
             //console.log(ses);
@@ -62,7 +79,7 @@ var returnRouter = function(io) {
 
         socket.on('FieldClicked',function(msg){
            // console.log("Socket with id " + socket.client.id +" and name " + socket.request.session.name +  " clicked filed number " + msg);
-            var rnm = socket.request.session.roomEntered;
+            var rnm = socket.request.session.legit.roomEntered;
             if(state[msg] == 0 && !end){
                 if(player[turn%2] == socket.request.session.name){
                     io.to(rnm+"_game").emit('change',[msg,turn%2]);
@@ -100,7 +117,7 @@ var returnRouter = function(io) {
         });
 
         socket.on('reset', function(msg){
-            var rnm = socket.request.session.roomEntered;
+            var rnm = socket.request.session.legit.roomEntered;
             for(i=0; i<9; i++){
                 io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
                 state[i] = 0; //i tak nie starczy chyba do nowej gry??
@@ -111,6 +128,7 @@ var returnRouter = function(io) {
 
         socket.on('disconnect', function(){
                 console.log('A socket with sessionID ' + socket.client.id + ' disconnected!');
+                delete socket.request.session.legit.inGame;
                 //check if disconnected user was a player(and is not having any kind of shit)
         });
        // console.log(socket.request.session.name);

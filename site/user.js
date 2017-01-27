@@ -4,44 +4,55 @@ var express = require('express');
  var router = express.Router();
  router.use( express.static('./static')); //muszę
 
+
+//sprawdzenie poziomu uprawnień - tu są 2 poziomy tak samo jak w guest
+// na początku bez uprawnień tak jak tam
+
 router.all('/', (req,res) =>{
-    res.redirect("/rooms"); //przekierowanie niezalogowanego na "/" jest w rooms
+    //to nie jest potrzebne
+    //res.redirect("/rooms"); //przekierowanie niezalogowanego na "/" jest w rooms
 });
 
 var userz = new Map(); //czy wyżej zadziałą
 
 router.all('/enter', (req,res) =>{
     //TODO check if valid pwd etc
-    if(req.session.entered)
+    /*if(req.session.legit.entered)
     {
         res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
         return; 
         //res.end(); //to też próbuje coś zwracać po zakończeniu
-    }
+    }*/
     var name = req.body.name;
     var pwd = req.body.pwd;
     console.log("wchodzę\n");
     var flag = false;
     //od razu że nie undefined i że jak trzeba - ale uwaga, bo bez .pwd to cały obiekt
     if (userz.get(name) != undefined &&  userz.get(name).pwd == pwd) flag = true;
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+
     if (flag) {
-        req.session.entered = 1;
+        req.session.legit.entered = 1;
         req.session.name = req.body.name;
         req.session.guest = 0;
         res.redirect("/rooms");
     }
-    else { res.redirect('/'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+    else { res.redirect('/redirectDefault'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
     //co prawda w ten sposób sprawdza się 2 razy :/
 });
 
 router.post('/create', (req,res) =>{
     //TODO check if not colliding data, pwd==pwd2 etc
-
-    if(req.session.entered)
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));   
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+    /*if(req.session.legit.entered)
     {
         res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
         return; 
-    }
+    }*/
 
     var flag = true;
     var name = req.body.name;
@@ -52,17 +63,20 @@ router.post('/create', (req,res) =>{
             pwd : req.body.pwd
         };
         userz.set(name,newUser);
-        req.session.entered = 1;
+        req.session.legit.entered = 1;
         req.session.name = req.body.name;
         req.session.guest = 0;
         res.redirect('/rooms');
     }
-    else { res.redirect('/'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+    else { res.redirect('/redirectDefault'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
     
 });
 
 
 router.post('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     console.log("czyWolny\n");
     
     var flag = true;
@@ -76,6 +90,9 @@ router.post('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
 });
 
 router.post('/ajaxValid', (req,res) => { //zmienić jakoś na post
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     console.log("czyDobre\n");
     var flag = true;
     var name = req.body.name; //z POST są w body a nie query
@@ -96,15 +113,28 @@ router.post('/ajaxValid', (req,res) => { //zmienić jakoś na post
     res.send(resp);
 });
 
+// !!! tu już te do których trzeba być zalogowanym
+router.use('/', (req,res,next) => {
+    var ses = req.session;
+    if (!ses.legit.entered) { 
+        res.redirect('/'); 
+        return; 
+    }
+    req.session.urlLegit.entered = ses.legit.entered; //1, ale tak bezpiecznie
+    next();
+});
 
 router.all("/logout",(req,res)=>{
-    if(!req.session.entered)
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+    /*if(!req.session.legit.entered)
     {
         res.redirect("/");
         return;
-    }
+    }*/
     var name = req.session.name;
-    if(req.session.entered==1 && req.session.guest!=1) {
+    if(req.session.legit.entered==1 && req.session.guest!=1) {
         req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
         res.redirect('/');
     }
@@ -114,13 +144,16 @@ router.all("/logout",(req,res)=>{
 });
 
 router.all("/delete",(req,res)=>{
-    if(!req.session.entered)
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+    /*if(!req.session.legit.entered)
     {
         res.redirect("/");
         return;
-    }
+    }*/
     var name = req.session.name;
-    if(req.session.entered==1 && req.session.guest!=1) {
+    if(req.session.legit.entered==1 && req.session.guest!=1) {
         userz.delete(name);
         req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
         res.redirect('/');

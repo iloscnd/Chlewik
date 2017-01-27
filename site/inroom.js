@@ -6,6 +6,21 @@ var express = require('express');
 
 //var inrooms = new Map();
 
+//sprawdzenie poziomu uprawnień - 
+//starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
+//i tak by starczyło, bo je przechodzi po kolei
+//!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
+    /// no więc tu jest pewien problem, bo trzeba sprawdzać w funkcjach niżej i tak, czy się nazwa pokoju też zgadza - ew. nazwę czytać z sesji i tyle
+router.use('/', (req,res,next) => {
+    var ses = req.session;
+    if (!ses.legit.roomEntered) { 
+        res.redirect('/'); 
+        return; 
+    }
+    req.session.urlLegit.roomEntered = ses.legit.roomEntered;
+    next();
+});
+
 var routerFun = function(roomz,io){
 
     //io.use(function(socket, next){
@@ -16,7 +31,7 @@ var routerFun = function(roomz,io){
         console.log('connected in room');
         socket.on('getIn', function() { //rn to na razie nazwa pokoju
             
-            var rnm = socket.request.session.roomEntered;
+            var rnm = socket.request.session.legit.roomEntered;
             var unm = socket.request.session.name;
             console.log("Jestem "+rnm);
             //console.log(ses);
@@ -38,7 +53,7 @@ var routerFun = function(roomz,io){
             io.to(roomname).emit('sbd entered',room.people); //do wszystkich, się też czyli człeka wliczy i pokaże
         });
         socket.on('ready', function() {
-            var rnm = socket.request.session.roomEntered;
+            var rnm = socket.request.session.legit.roomEntered;
             console.log("gotowy w "+rnm);
             var room = roomz.get(rnm); 
             var unm = socket.request.session.name;
@@ -50,17 +65,21 @@ var routerFun = function(roomz,io){
         socket.on('sbd entered', function(room) {
             socket.emit('sbd entered', room);
         });
-        socket.on('disconnect', function() {
+        socket.on('disconnect', function() { // UWAGA: TO SIĘ DODA WSZYSTKIM SOCKETOM, TEŻ TYM DO POKOJU ITP
             //var rnm = inrooms.get(socket); //można czytać z socket.req.ses
-            var rnm = socket.request.session.roomEntered;
+            console.log("socket " + socket.id + "disconnected from room!");
+            var rnm = socket.request.session.legit.roomEntered;
             var unm = socket.request.session.name;
             if (rnm == undefined) { console.log("OJEJKU"); return; }
             var room = roomz.get(rnm);
             if (room == undefined) { console.log("ŁOJENY"); return; } //czemu to się dzieje?
-            room.people--;
-            if(room.people == 0) {
-                roomz.delete(rnm);
-            }
+                //#### bez tego, tylko czasowo
+                //room.people--;
+                //if(room.people == 0) {
+                //    roomz.delete(rnm);
+                //}
+                //console.log("JUŻ USUWAM");
+                //delete socket.request.session.legit.roomEntered;
             room.unready.delete(unm);
             room.ready.delete(unm);
             io.to(rnm).emit('sbd entered',room.people);
@@ -72,12 +91,17 @@ var routerFun = function(roomz,io){
 
 
     router.all('/', (req,res) =>{
-        var name = req.query.name;
-        if(!req.session.entered)
+
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));    
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+
+        var name = req.query.roomName;
+        /*if(!req.session.legit.entered)
         {
             res.redirect("/");
             return;
-        }
+        }*/
         var r = roomz.get(name)
         if (r == undefined) { res.redirect('/rooms'); console.log("ojej"); return; }
         if (r.hasPwd) {

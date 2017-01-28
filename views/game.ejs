@@ -59,12 +59,14 @@
         //$("#"+"p2").text(JSON.stringify(socket.handshake.session.legit.inGame));
 
         //tu sobie emituje żeby wyjść - jak zmieni użytkownik coś w skrypcie, to gra mu przestanie działać póki nie zamknie przeglądarki i tyle, a innym nie
-        socket.emit('getOutGame');
-
-        socket.on('gotOutGame', function(){ 
+        //socket.emit('getOutGame');
+           //jest inaczej 
+        /*socket.on('gotOutGame', function(){ 
           alert(msg + " wygrał!");
-          window.location = "/rooms/room/?roomName="+ "<%=ses.legit.roomEntered%>";
-        });
+          //było window location od razu do pokoju
+        });*/
+        alert(msg + " wygrał!");
+        window.location = "/rooms/room/game/leave";
       });
 
     </script>

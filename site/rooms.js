@@ -10,26 +10,35 @@ var roomz = new Map(); //czy wyżej zadziała
 //starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
 //i tak by starczyło, bo je przechodzi po kolei
 //!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
-router.use('/', (req,res,next) => {
-    var ses = req.session;
-    if (!ses.legit.entered) { 
-        console.log(ses.legit.entered+"WRACAM3");
-        res.redirect('/'); 
-        return; 
-    }
-    req.session.urlLegit.entered = ses.legit.entered; //1, ale tak bezpiecznie
-    next();
-});
 
-//B. WAŻNE!!! jak ktoś usunie pokój jak ten nie połączony
+
+//B. WAŻNE!!! jak ktoś usunie pokój jak ten nie połączony  --- ale to zrobić w tamtym poprzednim middleware, żeby nie krążyło w tę i z powrotem, bo w urlLegit
 //z grą zrobić tak samo
-router.use('/', (req,res,next) => {
+// EDIT - w miarę zrobione i na tym poziomie co uprawn., a nie poziom niżej sprawdzane 
+  // BO tak jest ok - będzie próbowało przekierować na poziom na którym jest, więc najwyżej przejdzie dodatkową ścieżkę
+/*router.use('/', (req,res,next) => {
     if( req.session.legit == undefined || roomz.get(req.session.legit.roomEntered) == undefined) delete req.session.legit.roomEntered; //B. WAŻNE!!! jak ktoś usunie pokój jak ten nie połączony
     next();
-});
+});*/
 
-var routerFun = function(io) {
+var routerFun = function(io,userz,guestz) { //potrzebuję do sprawdzenia aktualności uprawnień
 
+    //trzeba userz, guestz, więc w routerFun
+    router.use('/', (req,res,next) => {
+
+        //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło - usuwamy tylko entered, bo resztę się i tak ustawi przy ponownym
+        if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) delete req.session.legit.entered; //B. WAŻNE!!! 
+        if( req.session.guest && guestz.get(req.session.name) == undefined) delete req.session.legit.entered; //B. WAŻNE!!! 
+
+        var ses = req.session;
+        if (!ses.legit.entered) { 
+            console.log(ses.legit.entered+"WRACAM3");
+            res.redirect('/'); 
+            return; 
+        }
+        req.session.urlLegit.entered = ses.legit.entered; //1, ale tak bezpiecznie
+        next();
+    });
     
     var inroomRouter = require('./inroom')(roomz,io);
     router.use('/room', inroomRouter);
@@ -64,25 +73,7 @@ console.log(JSON.stringify(req.session.urlLegit));
         //}
     });
 
-    router.all('/leave', (req,res) => {
-        console.log("100"+JSON.stringify(req.session.legit));
-console.log(JSON.stringify(req.session.urlLegit));
-/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        console.log("I CZEMU NIE USUWASZ");
-        var rnm = req.session.legit.roomEntered;
-        var room = roomz.get(rnm);
-        room.people--;
-        room.unready.delete(req.session.name);
-        room.ready.delete(req.session.name);
-
-        //ZROBIĆ ŻEBY INNYCH TEŻ WYWALIŁO WTEDY JAKOŚ
-        if(room.people == 0 /*|| room.guru == req.session.name*/) { //          ZROBIĆ       jak guru wyjdzie to koniec, bo tylko on może usuwać
-            roomz.delete(rnm);
-        }
-        delete req.session.legit.roomEntered;
-        res.redirect('/rooms');
-        return; //a może by res.end()?
-    });
+    
 
      //bez sensu..., że muszę pytać w tę i z powrotem jak chcę tylko wyświetlić wiem co
     router.all('/ajaxFormNew', (req,res) => {

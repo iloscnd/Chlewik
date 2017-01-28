@@ -7,6 +7,10 @@
 //np. jak spyta o favicon/ico jak jest w pokoju, to próbuję go dać do pokoju a on już jest pełen jeśli dołącza jako drugi 
 //i dopiero jak się popętli (bo przekierowuje go na / a przecież jest w pokoju, więc z powrotem) to uznaje że nie dostanie ikony
 
+
+var userz = new Map();  //tu, bo chcę sprawdzać też w /rooms czy aktualne uprawnienia
+var guestz = new Map(); 
+
 var http = require('http');
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -126,16 +130,16 @@ console.log(JSON.stringify(req.session.urlLegit));
 });*/
 
 
-var guestRouter = require('./guest');
+var guestRouter = require('./guest')(guestz);
 app.use('/guest', guestRouter);
 
 var registerRouter = require('./register');
 app.use('/register', registerRouter);
 
-var roomsRouter = require('./rooms')(io);
+var roomsRouter = require('./rooms')(io,userz,guestz);
 app.use('/rooms', roomsRouter);
 
-var userRouter = require('./user');
+var userRouter = require('./user')(userz);
 app.use('/user', userRouter);
 
 //moved to inroom

@@ -59,7 +59,7 @@
         <p id="pisz"><%=room.name%></p> <!-- nie może być spacji jak patrzę na innerHTML ; zrobić lepiej osobny niewidoczny-->
         <button class="button" id="ready">Potwierdź gotowość do gry</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
         
-        <form id='go' method="POST" action="/rooms/leave" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
+        <form id='go' method="POST" action="/rooms/room/leave" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
             <button class="button" style="float:right" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
         </form>
     </center>

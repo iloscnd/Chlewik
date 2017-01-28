@@ -66,7 +66,12 @@ console.log(JSON.stringify(req.session.urlLegit));
        //########  przydałoby się tu i w tych funkcjach niżej sprawdzać czy gra jeszcze istnieje
 
        //nie uruchamiać z podłączoną wtyczką, albo to zmienić żeby uważało na undefined
-       var roomName = socket.request.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
+       //console.log(socket.request + "\n\n!!!\n\n");
+       console.log(socket.handshake.session+ "\n\n;;;\n\n");
+       //console.log(socket.request.session+ "\n\n:::\n\n"); //nie ma jak ten middleware (express-socket.io-session)
+       
+       //zmienić, żeby sprawdzał czy aby na pewno nie ma w połowie undefined
+       var roomName = socket.handshake.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
        var room = roomz.get(roomName);
        
        var game;// = room.game;
@@ -78,15 +83,15 @@ console.log(JSON.stringify(req.session.urlLegit));
 
        /*
         if(!player[0])
-            player[0] = socket.request.session.name;
+            player[0] = socket.handshake.session.name;
         else
-            if(!player[1] && player[0] != socket.request.session.name)
-                player[1] = socket.request.session.name;
+            if(!player[1] && player[0] != socket.handshake.session.name)
+                player[1] = socket.handshake.session.name;
         
         end = 0; */ //moved to creating game
         socket.on('gotInGame', function() {
-            var rnm = socket.request.session.legit.roomEntered;
-            var unm = socket.request.session.name;
+            var rnm = socket.handshake.session.legit.roomEntered;
+            var unm = socket.handshake.session.name;
             console.log("W grze "+unm);
             //to MUSZĄ byś obiekty te wszystkie pola, żeby je mógł zmieniać
             //tzn tylko wtedy przekaże referencję, a nie wartość
@@ -108,16 +113,22 @@ console.log(JSON.stringify(req.session.urlLegit));
             socket.emit('user_connected', {name:player[1], id:"p2" })
 
 
-            //io.to(roomname+"_game").emit('sbd entered',room.people);
+            //io.to(roomname+"_game").emit('sbd entered',room.connectedPeople);
 
         });
 
+        socket.on('getOutGame', function() {
+            delete socket.handshake.session.legit.inGame; 
+            socket.handshake.session.save(); //zapisz zmianę też w tamtej
+            socket.emit('gotOutGame');
+        });
+
         socket.on('FieldClicked',function(msg){
-           // console.log("Socket with id " + socket.client.id +" and name " + socket.request.session.name +  " clicked filed number " + msg);
-            var rnm = socket.request.session.legit.roomEntered;
+           // console.log("Socket with id " + socket.client.id +" and name " + socket.handshake.session.name +  " clicked filed number " + msg);
+            var rnm = socket.handshake.session.legit.roomEntered;
             console.log("!!!!!!!!\n"+JSON.stringify(game)+"///////"+socket.client.id);
             if(state[msg] == 0 && !end[0]){
-                if(player[turn[0]%2] == socket.request.session.name){
+                if(player[turn[0]%2] == socket.handshake.session.name){
                     io.to(rnm+"_game").emit('change',[msg,turn[0]%2]);
                     state[msg] = turn[0]%2 + 1;
                     turn[0]++; 
@@ -148,13 +159,13 @@ console.log(JSON.stringify(req.session.urlLegit));
 
                         ///delete game; //to NIE DZIAŁA, jest tylko czytanie z sesji
 
-                        delete game; //a może zadziała? w końcu wskaźnik to wskaźnik
+                        delete room.game; //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
 
                         // tu jakoś zrobić, żeby przekierował tam gdzie trzeba, albo w ejs to zrobić
                         console.log("WYŚLIJ ŻE WYGRAŁ");
-                        io.to(rnm+"_game").emit('won', socket.request.session.name);
+                        io.to(rnm+"_game").emit('won', socket.handshake.session.name);
                         
-                        end[0] = 1;
+                        //end[0] = 1;
                     }
                 }
             }
@@ -162,7 +173,7 @@ console.log(JSON.stringify(req.session.urlLegit));
         });
 
         socket.on('reset', function(msg){
-            var rnm = socket.request.session.legit.roomEntered;
+            var rnm = socket.handshake.session.legit.roomEntered;
             for(i=0; i<9; i++){
                 io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
                 state[i] = 0; //i tak nie starczy chyba do nowej gry??
@@ -173,10 +184,10 @@ console.log(JSON.stringify(req.session.urlLegit));
 
         socket.on('disconnect', function(){
                 console.log('A socket with sessionID ' + socket.client.id + ' disconnected!');
-                //delete socket.request.session.legit.inGame; //to tak nie działa
+                //delete socket.handshake.session.legit.inGame; //to tak nie działa
                 //check if disconnected user was a player(and is not having any kind of )
         });
-       // console.log(socket.request.session.name);
+       // console.log(socket.handshake.session.name);
     });
 
 

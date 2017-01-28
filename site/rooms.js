@@ -65,11 +65,18 @@ console.log(JSON.stringify(req.session.urlLegit));
     });
 
     router.all('/leave', (req,res) => {
+        console.log("100"+JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         console.log("I CZEMU NIE USUWASZ");
         var rnm = req.session.legit.roomEntered;
         var room = roomz.get(rnm);
         room.people--;
-        if(room.people == 0) {
+        room.unready.delete(req.session.name);
+        room.ready.delete(req.session.name);
+
+        //ZROBIĆ ŻEBY INNYCH TEŻ WYWALIŁO WTEDY JAKOŚ
+        if(room.people == 0 /*|| room.guru == req.session.name*/) { //          ZROBIĆ       jak guru wyjdzie to koniec, bo tylko on może usuwać
             roomz.delete(rnm);
         }
         delete req.session.legit.roomEntered;
@@ -121,12 +128,16 @@ console.log(JSON.stringify(req.session.urlLegit));
                 name : req.body.roomName,
                 pwd : req.body.pwd,
                 hasPwd : flag,
-                people : 0, //socket ogarnia liczby
+                people : 0, 
+                connectedPeople : 0, //socket ogarnia liczby
                 unready : new Map(),
-                ready : new Map()
+                ready : new Map(),
+                guru : req.session.name //taki co mu ma być wolno usuwać innych - ten, co utworzył
             };
             roomz.set(name,newRoom);
         }
+        newRoom.people = 1;
+        newRoom.unready.set(req.session.name);
         console.log(name);
         console.log(req.session.legit.roomEntered);
         res.redirect('/rooms/room/'+'?roomName='+name);
@@ -134,15 +145,20 @@ console.log(JSON.stringify(req.session.urlLegit));
         //res.redirect('/rooms/room=') //docelowo jakoś tak
     });
 
-    router.post('/setSessionPwd', (req,res) => { //post; chyba niepotrzebne
+    router.post('/setSessionPwd', (req,res) => { //post; potrzebne, żeby ustawić że wszedł
 console.log("15"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-
+        
         var name = req.query.name;
+        var room = roomz.get(name);
         var pwd = req.body.roomPwd;
-        req.session.roomPwd = pwd;
+        if (room.hasPwd && room.pwd != pwd) { console.log("ZŁE HASŁO"); res.redirect('/rooms?err=pwd'); return; } 
+        if (room.people == 2) { console.log("PEŁEN"); res.redirect('/rooms?err=crowded'); return; } //TYLKO DLA DWUOSOBOWYCH
+        req.session.roomPwd = pwd; //to nie jest potrzebne
         req.session.legit.roomEntered = name;
+        room.people++;
+        room.unready.set(req.session.name);
         res.redirect('/rooms/room/'+'?roomName='+name);
         return; //a może by res.end()?
     });

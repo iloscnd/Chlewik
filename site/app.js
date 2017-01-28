@@ -11,9 +11,19 @@ var http = require('http');
 var express = require('express');
 var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');//mozna spróbować szyfrować
-var session = require('express-session');
+var session = require('express-session')
 var FileStore = require('session-file-store')(session); //to sprawia, że jak się ustawi, to będzie zapisywał ok a nie w RAM
- 
+ var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
+    //store: new FileStore({
+    //    path : './sessions' //to domyślne, ale napiszę żeby bylo widać
+    //}), //FileStore jest var, patrz góra!
+    secret: 'keyboard cat',
+    maxAge: 60000,
+    resave : true, //piszą że jak czas ważności, może on musi nadpisywać ostatnie użycie bo wygaśnie inaczej https://github.com/expressjs/session
+    saveUninitialized : false //nie zapisuj póki nic w niej nie ma jak rozumiem
+});
+var sharedSession = require('express-socket.io-session');
+//potem app.use(sessionMid)
 
 var app = express();
 var server = http.createServer(app);
@@ -28,7 +38,7 @@ app.use( bodyParser.urlencoded({extended:true}) ) ;
 
 app.use( cookieParser() );
 
-
+/*
 // LEPIEJ znacznie: https://www.npmjs.com/package/express-socket.io-session
 var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
     //store: new FileStore({
@@ -43,6 +53,13 @@ io.use(function(socket, next){
     sessionMid(socket.request, socket.request.res, next); //wtedy moge sie dostac do sesji w socket
 });
 app.use(sessionMid);
+*/
+app.use(sessionMid);
+
+//może z tamtym trickiem jakby tak dać to session.save(), to by też poszło?
+io.use(sharedSession(sessionMid, {
+    autoSave : true //dzięki temu w socket.io event handler'ach można modyfikować sesję!
+}));
 
 app.use( express.static('./static'));
 

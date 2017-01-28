@@ -7,7 +7,7 @@
         </title>
 
         <script src="/socket.io/socket.io.js"></script>
-        <script src="/appjs.js"></script>
+        <script src="/appjs.js"></script> <!--to generuje żądanie  do serwera takie normalne, bo czemu nie...- i moje przekierowanie go przekierowuje, ale jakoś działa  -->
         
         <script>
             
@@ -20,11 +20,11 @@
                     session : ses , 
                     roomname : room.name
                 };*/
-                socket.emit('getIn'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
+                socket.emit('getInRoom'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
 
-                socket.on('sbd entered', function(whatRoom) { //dbam wcześniej żeby nie undef
+                socket.on('sbd entered', function(howManyAre) { //dbam wcześniej żeby nie undef
                     var p = document.getElementById('pisz');
-                    p.innerHTML = whatRoom ; // TU LEPIEJ ZMIENIĆ, ŻEBY BYŁA JAKAŚ FUNKCJA ODŚWIEŻ STAN CAŁEGO POKOJU I GRY POTEM
+                    p.innerHTML = "liczba aktualnie połączonych ludzi w pokoju:"+ howManyAre ; // TU LEPIEJ ZMIENIĆ, ŻEBY BYŁA JAKAŚ FUNKCJA ODŚWIEŻ STAN CAŁEGO POKOJU I GRY POTEM
                 });
 
                 var btReady = document.getElementById('ready');
@@ -34,7 +34,14 @@
                 });
 
                 socket.on('begin game', function() {
-                    window.location = "/game";
+
+
+
+                    // TU IM DODAWAĆ NA SERWERZE INGAME DO LEGIT W SESJI - bez tego się źle przekierowuje
+
+
+
+                    window.location = "/rooms/room/createGame";
                 });
                 
             });
@@ -52,7 +59,7 @@
         <p id="pisz"><%=room.name%></p> <!-- nie może być spacji jak patrzę na innerHTML ; zrobić lepiej osobny niewidoczny-->
         <button class="button" id="ready">Potwierdź gotowość do gry</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
         
-        <form id='go' method="POST" action="/rooms" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
+        <form id='go' method="POST" action="/rooms/room/leave" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
             <button class="button" style="float:right" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
         </form>
     </center>

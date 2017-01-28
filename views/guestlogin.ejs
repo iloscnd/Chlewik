@@ -13,6 +13,9 @@
                 
                 form.onsubmit = function() {
                     //return false;
+
+                    console.log("PRÓBUJE SUBMIT");
+
                     err.innerHTML = "";
                     
                     var valname = guestName.value.trim();
@@ -34,14 +37,16 @@
 
                     req.onreadystatechange = function() {
                         if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                            //nie wypisuje na konsolę bo to ejs... a on u klienta
                             if(req.responseText == "NO") {
                                 if (!flag) err.innerHTML += "<br>";
                                 err.innerHTML += "zajęty nick";
                             }
                             else if(flag == true && req.responseText == "OK") {
                                 //err.innerHTML += "coś jest nie tak" //już ok
-                                if(guestName.value.trim()==valname) form.submit(); //jeśli przez czas asynchr. nic nie zmienił
+                                if(guestName.value.trim()==valname) { form.submit();} //jeśli przez czas asynchr. nic nie zmienił
                             }
+                            
                         }
                     };
                     req.send(params); //tu, jak post

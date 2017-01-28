@@ -64,25 +64,7 @@ console.log(JSON.stringify(req.session.urlLegit));
         //}
     });
 
-    router.all('/leave', (req,res) => {
-        console.log("100"+JSON.stringify(req.session.legit));
-console.log(JSON.stringify(req.session.urlLegit));
-/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        console.log("I CZEMU NIE USUWASZ");
-        var rnm = req.session.legit.roomEntered;
-        var room = roomz.get(rnm);
-        room.people--;
-        room.unready.delete(req.session.name);
-        room.ready.delete(req.session.name);
-
-        //ZROBIĆ ŻEBY INNYCH TEŻ WYWALIŁO WTEDY JAKOŚ
-        if(room.people == 0 /*|| room.guru == req.session.name*/) { //          ZROBIĆ       jak guru wyjdzie to koniec, bo tylko on może usuwać
-            roomz.delete(rnm);
-        }
-        delete req.session.legit.roomEntered;
-        res.redirect('/rooms');
-        return; //a może by res.end()?
-    });
+    
 
      //bez sensu..., że muszę pytać w tę i z powrotem jak chcę tylko wyświetlić wiem co
     router.all('/ajaxFormNew', (req,res) => {

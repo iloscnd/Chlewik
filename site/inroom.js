@@ -133,6 +133,26 @@ console.log(JSON.stringify(req.session.urlLegit));
         return; //a może by res.end()?
     });
 
+    router.all('/leave', (req,res) => {
+        console.log("100"+JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        console.log("I CZEMU NIE USUWASZ");
+        var rnm = req.session.legit.roomEntered;
+        var room = roomz.get(rnm);
+        room.people--;
+        room.unready.delete(req.session.name);
+        room.ready.delete(req.session.name);
+
+        //ZROBIĆ ŻEBY INNYCH TEŻ WYWALIŁO WTEDY JAKOŚ
+        if(room.people == 0 /*|| room.guru == req.session.name*/) { //          ZROBIĆ       jak guru wyjdzie to koniec, bo tylko on może usuwać
+            roomz.delete(rnm);
+        }
+        delete req.session.legit.roomEntered;
+        res.redirect('/rooms');
+        return; //a może by res.end()?
+    });
+
     router.all('/createGame', (req,res) => { // !!! to powinno tak naprawdę przekierowywać do tworzenia gry danego typu, z podpiętym routerem gra danego typu, tam 2 poziomy uprawnień i tworzenie na tym bez
 console.log("18"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));    

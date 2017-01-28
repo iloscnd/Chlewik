@@ -57,6 +57,29 @@ console.log(JSON.stringify(req.session.urlLegit));
             return; //a może by res.end()?
     });
 
+    router.all('/leave', (req,res) => {
+        console.log("20"+JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        console.log("WYCHODZI Z GRY");
+        var unm = req.session.name;
+        var rnm = req.session.legit.roomEntered;
+        var room = roomz.get(rnm);
+        console.log("\n\n " + room + "\n\n ");
+        
+        //jak gra już nie istnieje, to nie można zczytać
+        if(room.game != undefined && room.game.end[0]) { //          ZROBIĆ       jak guru wyjdzie to koniec, bo tylko on może usuwać
+            delete room.game; //może ktoś zmienić skrypt, ale przy końcu gry tylko jak wszyscy, to się stan nie wyzeruje w pokoju, a dużo gier i tak się nie da
+        }
+        delete req.session.legit.inGame;
+
+        room.ready.delete(unm);
+        room.unready.set(unm, true);
+
+        res.redirect('/rooms/room/?roomName=' + rnm);
+        return; //a może by res.end()?
+    });
+
 
     //na arzie emitowane do wszystkich, trzeba zmienić ż etu wtyczki też w pokoju
     io.on('connection', function(socket){
@@ -117,11 +140,12 @@ console.log(JSON.stringify(req.session.urlLegit));
 
         });
 
+        /* //jednak inaczej - po prostu przekierowanie do .../game/getOut czy coś
         socket.on('getOutGame', function() {
             delete socket.handshake.session.legit.inGame; 
             socket.handshake.session.save(); //zapisz zmianę też w tamtej
             socket.emit('gotOutGame');
-        });
+        }); */
 
         socket.on('FieldClicked',function(msg){
            // console.log("Socket with id " + socket.client.id +" and name " + socket.handshake.session.name +  " clicked filed number " + msg);
@@ -160,6 +184,8 @@ console.log(JSON.stringify(req.session.urlLegit));
                         ///delete game; //to NIE DZIAŁA, jest tylko czytanie z sesji
 
                         delete room.game; //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
+
+                        end[0] = 1;
 
                         // tu jakoś zrobić, żeby przekierował tam gdzie trzeba, albo w ejs to zrobić
                         console.log("WYŚLIJ ŻE WYGRAŁ");

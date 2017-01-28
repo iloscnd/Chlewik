@@ -13,7 +13,10 @@ var express = require('express');
     /// no więc tu jest pewien problem, bo trzeba sprawdzać w funkcjach niżej i tak, czy się nazwa pokoju też zgadza - ew. nazwę czytać z sesji i tyle
 router.use('/', (req,res,next) => {
     var ses = req.session;
+    console.log(ses.legit.roomEntered+"WRACAM???4");
+    console.log(req.session.legit.roomEntered+"WRACAM???4");
     if (!ses.legit.roomEntered) { 
+        console.log(ses.legit.roomEntered+"WRACAM4");
         res.redirect('/'); 
         return; 
     }
@@ -27,7 +30,7 @@ var routerFun = function(roomz,io){
     //    session(socket.request, socket.request.res, next); //wtedy moge sie dostac do sesji w socket
     //});
     var gameRouter = require('./game')(roomz,io);
-    app.use('/game',gameRouter);
+    router.use('/game',gameRouter);
 
     io.on('connection', function(socket) {
         console.log('connected in room');
@@ -61,7 +64,7 @@ var routerFun = function(roomz,io){
             var unm = socket.request.session.name;
             room.unready.delete(unm);
             room.ready.set(unm, true);
-            if (room.unready.size == 0) io.to(rnm).emit('begin game');
+            if (room.unready.size == 0) { console.log("\nPOCZ\n"); io.to(rnm).emit('begin game'); }
             else io.to(rnm).emit('sbd entered',room.people);
         });
         socket.on('sbd entered', function(room) {
@@ -94,7 +97,7 @@ var routerFun = function(roomz,io){
 
     router.all('/', (req,res) =>{
 
-console.log(JSON.stringify(req.session.legit));
+console.log("17"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));    
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
@@ -119,14 +122,17 @@ console.log(JSON.stringify(req.session.urlLegit));
         }
         console.log("!!!"+r.name);
         res.render('inroom.ejs', model);
+        return; //a może by res.end()?
     });
 
     router.all('/createGame', (req,res) => { // !!! to powinno tak naprawdę przekierowywać do tworzenia gry danego typu, z podpiętym routerem gra danego typu, tam 2 poziomy uprawnień i tworzenie na tym bez
-console.log(JSON.stringify(req.session.legit));
+console.log("18"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));    
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }        
 
-        var roomName = res.session.legit.roomEntered;
+        console.log("\n TWORZĘ \n");
+
+        var roomName = req.session.legit.roomEntered;
         
         var room = roomz.get(roomName); //ew. spr czy nie undefined
         if (room == undefined) {res.redirect('/redirectDefault'); return; }
@@ -134,10 +140,10 @@ console.log(JSON.stringify(req.session.urlLegit));
             room.game = {
                 //gametype
                 state : [0,0,0,0,0,0,0,0,0],
-                players : [undefined, undefined],
-                turn : 0,   
+                player : [undefined, undefined],
+                turn : [0],   
                 srcs : ["tictac/empty.png","tictac/tic.png","tictac/tac.png"],
-                end : 0
+                end : [0]
             };
         };
         var game = room.game;
@@ -149,7 +155,18 @@ console.log(JSON.stringify(req.session.urlLegit));
         
         game.end = 0;
 
-        res.redirect('/rooms/room/?roomName=' + roomName + '/game'); //można by pewnie napisać ~url + /game ; nazwa pokoju w adresie dla picu
+        req.session.legit.inGame = 1;
+
+        console.log(roomName);
+        console.log(room);
+        
+        //!!!ŹLE - widzi parametr i nie wchodzi w /game, tylko idzie w '/', bo ma do tego parametr
+        //tylgo reg exp w adresie pewnie by można zachować taki adres
+        //res.redirect('/rooms/room/?roomName=' + roomName + '/game');   //!!!ŹLE - widzi parametr i nie wchodzi w /game, tylko idzie w '/', bo ma do tego parametr
+        res.redirect('/rooms/room/game');  //!!!ŹLE - widzi parametr i nie wchodzi w game
+        //można by pewnie napisać ~url + /game ; nazwa pokoju w adresie dla picu; ŹLE - widzi parametr i nie wchodzi w game
+
+        return; //a może by res.end()?
     });
 
     return router;

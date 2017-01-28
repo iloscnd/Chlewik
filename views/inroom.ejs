@@ -7,7 +7,7 @@
         </title>
 
         <script src="/socket.io/socket.io.js"></script>
-        <script src="/appjs.js"></script>
+        <script src="/appjs.js"></script> <!--to generuje żądanie  do serwera takie normalne, bo czemu nie...- i moje przekierowanie go przekierowuje, ale jakoś działa  -->
         
         <script>
             
@@ -37,12 +37,11 @@
 
 
 
-                    // TU IM DODAWAĆ NA SERWERZE INGAME DO LEGIT W SESJI
+                    // TU IM DODAWAĆ NA SERWERZE INGAME DO LEGIT W SESJI - bez tego się źle przekierowuje
 
 
 
-
-                    window.location = "/rooms/inroom/createGame";
+                    window.location = "/rooms/room/createGame";
                 });
                 
             });

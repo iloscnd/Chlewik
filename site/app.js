@@ -1,3 +1,12 @@
+
+
+///!!!###  jak się okazuje, render nie kończy odpowiedzi i idzie dalej w domyślne pokazywanie okna
+/// ale po redirect już chyba return nie jest potrzebne, ani end
+
+//czemu chrome pyta o favicon/ico do serwera na koniec, jaki on jest głupi...
+//np. jak spyta o favicon/ico jak jest w pokoju, to próbuję go dać do pokoju a on już jest pełen jeśli dołącza jako drugi 
+//i dopiero jak się popętli (bo przekierowuje go na / a przecież jest w pokoju, więc z powrotem) to uznaje że nie dostanie ikony
+
 var http = require('http');
 var express = require('express');
 var bodyParser = require('body-parser');
@@ -19,10 +28,12 @@ app.use( bodyParser.urlencoded({extended:true}) ) ;
 
 app.use( cookieParser() );
 
+
+// LEPIEJ znacznie: https://www.npmjs.com/package/express-socket.io-session
 var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
-    store: new FileStore({
-        path : './sessions' //to domyślne, ale napiszę żeby bylo widać
-    }), //FileStore jest var, patrz góra!
+    //store: new FileStore({
+    //    path : './sessions' //to domyślne, ale napiszę żeby bylo widać
+    //}), //FileStore jest var, patrz góra!
     secret: 'keyboard cat',
     maxAge: 60000,
     resave : true, //piszą że jak czas ważności, może on musi nadpisywać ostatnie użycie bo wygaśnie inaczej https://github.com/expressjs/session
@@ -41,7 +52,7 @@ app.use( express.static('./static'));
 //to jest przekierowanie człeka, który wszedł głębiej a chce pójść płycej brz wychodzenia
 // przekierowanie tych bez uprawnień w konkretnych routerach - najlepiej w routerze te same potrzebne uprawnienia
 
-app.use('/', (req,res,next) => {
+app.use((req,res,next) => { //było z '/'
     if (req.session.legit == undefined) req.session.legit = {}; //do porównania
     req.session.urlLegit = {}; //obiekt uprawnień żądania, zwiększany przy rozkładaniu url'a
                             //żądanie musi być na tym poziomie uprawnień co użytkownik
@@ -55,10 +66,11 @@ app.all('/redirectDefault', (req,res) => {
     var ses = req.session;
     //if (ses.redirected) next();   //to było jak był z use na / i we wszystkich przekier.
     //else {
+        console.log("ZERO"+JSON.stringify(req.session.legit));
         if(ses.legit == undefined) res.redirect('/'); //ono nie może dawać wtedy tu
         //ses.redirected = 1;
         if (ses.legit.inGame) { 
-            res.redirect('/game/' + ses.gameType +'/?gameId=' + ses.legit.inGame); 
+            res.redirect('/rooms/room/game' /*+ '/' + ses.gameType +'/?gameId=' + ses.legit.inGame*/); 
             return; 
         }
         if (ses.legit.roomEntered) {
@@ -71,6 +83,7 @@ app.all('/redirectDefault', (req,res) => {
             return;
         }
         res.redirect('/');
+        return; //a może by res.end()?
     //}
 });
 
@@ -113,7 +126,7 @@ app.use('/user', userRouter);
 //app.use('/game',gameRouter);
 
 app.get("/", (req, res) =>{
-console.log(JSON.stringify(req.session.legit));
+console.log("NIC"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/  if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
@@ -122,8 +135,9 @@ console.log(JSON.stringify(req.session.urlLegit));
         res.redirect("/rooms");
     }
     else */ //to już w ogólnym przekierowaniu
+    console.log("MA BYĆ KONIEC");
         res.render("index.ejs");
-
+        res.end(); // ??? może return wraca do poprzedniego miejsca gdzie było przekierowane albo coś chyba
 });
 
 //logout przeniesiony do rooms - bo poziomy uprawnień i wygodniej, patrz to co wyżej w komentarzu nad przekierowaniami
@@ -147,7 +161,9 @@ app.use((req,res,next) => {
 
     //res.render('404.ejs', { url : req.url }); 
     //chcemy żeby mu wróciło do domyślnej
+    console.log("DOMYŚL SIĘ"+req.url);//o ty szmato
     res.redirect('/redirectDefault');
+    return; //a może by res.end()?
 });
 
 

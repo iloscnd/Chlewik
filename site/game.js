@@ -12,10 +12,11 @@ router.use( express.static('./static'));
 router.use('/', (req,res,next) => {
     var ses = req.session;
     if (!ses.legit.inGame) { 
+        console.log(ses.legit.inGame+"WRACAM5");
         res.redirect('/'); 
         return; 
     }
-
+    req.session.urlLegit.inGame = ses.legit.inGame; //1, ale tak bezpiecznie; bez tego się pętli w neiskończoność przekierowując że wolno ale nie wolno
     next();
 });
 
@@ -34,7 +35,7 @@ var returnRouter = function(roomz,io) {
 
     router.get('/', function(req, res){
 
-console.log(JSON.stringify(req.session.legit));
+console.log("19"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 /*
@@ -44,13 +45,16 @@ console.log(JSON.stringify(req.session.urlLegit));
         }
         else*/
 
-        var roomName = roomz.get(req.session.legit.roomEntered);
+        var roomName = req.session.legit.roomEntered;
         var room = roomz.get(roomName);
+        console.log(roomName);
+        console.log(room);
         if (room == undefined) {res.redirect('/redirectDefault'); return; }
         var game = room.game;
         if (game == undefined) {res.redirect('/redirectDefault'); return; }
 
             res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session});
+            return; //a może by res.end()?
     });
 
 
@@ -61,14 +65,16 @@ console.log(JSON.stringify(req.session.urlLegit));
 
        //########  przydałoby się tu i w tych funkcjach niżej sprawdzać czy gra jeszcze istnieje
 
-       var roomName = socket.request.session.legit.roomEntered;
+       //nie uruchamiać z podłączoną wtyczką, albo to zmienić żeby uważało na undefined
+       var roomName = socket.request.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
        var room = roomz.get(roomName);
-       var game = room.game;
-       var state = game.state;
-       var player = game.player;
-       var turn = game.turn;
-       var srcs = game.srcs;
-       var end = game.end;
+       
+       var game;// = room.game;
+       var state;// = game.state;
+       var player;// = game.player;
+       var turn;// = game.turn;
+       var srcs;// = game.srcs;
+       var end;// = game.end;
 
        /*
         if(!player[0])
@@ -82,6 +88,15 @@ console.log(JSON.stringify(req.session.urlLegit));
             var rnm = socket.request.session.legit.roomEntered;
             var unm = socket.request.session.name;
             console.log("W grze "+unm);
+            //to MUSZĄ byś obiekty te wszystkie pola, żeby je mógł zmieniać
+            //tzn tylko wtedy przekaże referencję, a nie wartość
+            //więc zrobiłem tablice 1 - elementowe
+            game = room.game;
+            state = game.state;
+            player = game.player;
+            turn = game.turn;
+            srcs = game.srcs;
+            end = game.end;
             //console.log(ses);
             //var name = ses.roomname;
             //var session = ses.session;
@@ -100,11 +115,12 @@ console.log(JSON.stringify(req.session.urlLegit));
         socket.on('FieldClicked',function(msg){
            // console.log("Socket with id " + socket.client.id +" and name " + socket.request.session.name +  " clicked filed number " + msg);
             var rnm = socket.request.session.legit.roomEntered;
-            if(state[msg] == 0 && !end){
-                if(player[turn%2] == socket.request.session.name){
-                    io.to(rnm+"_game").emit('change',[msg,turn%2]);
-                    state[msg] = turn%2 + 1;
-                    turn++;
+            console.log("!!!!!!!!\n"+JSON.stringify(game)+"///////"+socket.client.id);
+            if(state[msg] == 0 && !end[0]){
+                if(player[turn[0]%2] == socket.request.session.name){
+                    io.to(rnm+"_game").emit('change',[msg,turn[0]%2]);
+                    state[msg] = turn[0]%2 + 1;
+                    turn[0]++; 
                     //check if won
 
                     won = false;
@@ -125,15 +141,20 @@ console.log(JSON.stringify(req.session.urlLegit));
                             //io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
                             state[i] = 0; //i tak nie starczy chyba do nowej gry??
                         }*/
-                        state = [0,0,0,0,0,0,0,0,0]; //dla jednej gry
-                        player = [undefined, undefined];
 
-                        delete game;
+                        //to chyba tworzy nowy obiekt i tamten wskaźnik już nie działa
+                        //state = [0,0,0,0,0,0,0,0,0]; //dla jednej gry
+                        //player = [undefined, undefined];
+
+                        ///delete game; //to NIE DZIAŁA, jest tylko czytanie z sesji
+
+                        delete game; //a może zadziała? w końcu wskaźnik to wskaźnik
+
                         // tu jakoś zrobić, żeby przekierował tam gdzie trzeba, albo w ejs to zrobić
-
+                        console.log("WYŚLIJ ŻE WYGRAŁ");
                         io.to(rnm+"_game").emit('won', socket.request.session.name);
                         
-                        end = 1;
+                        end[0] = 1;
                     }
                 }
             }
@@ -146,7 +167,7 @@ console.log(JSON.stringify(req.session.urlLegit));
                 io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
                 state[i] = 0; //i tak nie starczy chyba do nowej gry??
             }
-            end = 0;
+            end[0] = 0;
         });
 
 

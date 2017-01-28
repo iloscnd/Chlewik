@@ -13,6 +13,7 @@ var roomz = new Map(); //czy wyżej zadziała
 router.use('/', (req,res,next) => {
     var ses = req.session;
     if (!ses.legit.entered) { 
+        console.log(ses.legit.entered+"WRACAM3");
         res.redirect('/'); 
         return; 
     }
@@ -34,9 +35,9 @@ var routerFun = function(io) {
     router.use('/room', inroomRouter);
     
     router.all('/', (req,res) =>{
-console.log(JSON.stringify(req.session.legit) + "NO HEJ");
+console.log("11"+JSON.stringify(req.session.legit) + "NO HEJ");
 console.log(JSON.stringify(req.session.urlLegit));
-/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { console.log("COOO"); res.redirect('/redirectDefault'); return; }
 
         var err = req.query.err;
         var errWhat;
@@ -56,28 +57,39 @@ console.log(JSON.stringify(req.session.urlLegit));
                 roomz : roomz,
                 error : errWhat
             }
+            console.log("powinien iść");
             res.render('roomView.ejs',model);
+            console.log("no ale jest dziwny");
+            return; //a może by res.end()?
         //}
     });
 
     router.all('/leave', (req,res) => {
         console.log("I CZEMU NIE USUWASZ");
+        var rnm = req.session.legit.roomEntered;
+        var room = roomz.get(rnm);
+        room.people--;
+        if(room.people == 0) {
+            roomz.delete(rnm);
+        }
         delete req.session.legit.roomEntered;
         res.redirect('/rooms');
+        return; //a może by res.end()?
     });
 
      //bez sensu..., że muszę pytać w tę i z powrotem jak chcę tylko wyświetlić wiem co
     router.all('/ajaxFormNew', (req,res) => {
-console.log(JSON.stringify(req.session.legit));
+console.log("12"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         //console.log("widzę\n");
         res.send("napis");
+        return; //a może by res.end()?
     });
     
 
     router.post('/ajaxIsName', (req,res) => {
-console.log(JSON.stringify(req.session.legit));
+console.log("13"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         var flag = true;
@@ -88,10 +100,11 @@ console.log(JSON.stringify(req.session.urlLegit));
         if (flag) resp="OK"; else resp="NO";
         console.log(resp+"\n");
         res.send(resp);
+        return; //a może by res.end()?
     });
 
     router.post('/create', (req,res) => {
-console.log(JSON.stringify(req.session.legit));
+console.log("14"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         //tu trzeba by sprawdzać czy ktoś nie jest już w pokoju
@@ -100,6 +113,7 @@ console.log(JSON.stringify(req.session.urlLegit));
         if (roomz.get(name) != undefined) flag = false;
         req.session.roomPwd = req.body.pwd; //?
         req.session.legit.roomEntered = name;
+        console.log(name);
         if (flag) {
             var pwdTrimmed = req.body.pwd.trim();
             var flag = (!(pwdTrimmed.length == 0))
@@ -113,12 +127,15 @@ console.log(JSON.stringify(req.session.urlLegit));
             };
             roomz.set(name,newRoom);
         }
+        console.log(name);
+        console.log(req.session.legit.roomEntered);
         res.redirect('/rooms/room/'+'?roomName='+name);
+        return; //a może by res.end()?
         //res.redirect('/rooms/room=') //docelowo jakoś tak
     });
 
     router.post('/setSessionPwd', (req,res) => { //post; chyba niepotrzebne
-console.log(JSON.stringify(req.session.legit));
+console.log("15"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
@@ -127,10 +144,11 @@ console.log(JSON.stringify(req.session.urlLegit));
         req.session.roomPwd = pwd;
         req.session.legit.roomEntered = name;
         res.redirect('/rooms/room/'+'?roomName='+name);
+        return; //a może by res.end()?
     });
 
     router.all("/logout",(req,res)=>{
-console.log(JSON.stringify(req.session.legit));
+console.log("16"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         // console.log(req.session);
@@ -142,6 +160,7 @@ console.log(JSON.stringify(req.session.urlLegit));
             delete req.session.legit.entered; //bez tego przekieruje z powrotem
             if (req.session.guest==1) res.redirect('/guest/logout');
             else res.redirect('/user/logout'); //bez else się rzuca "can't set headers after they are sent"
+            return; //a może by res.end()?
             //req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
             //res.redirect('/');
         //}

@@ -18,9 +18,9 @@ var cookieParser = require('cookie-parser');//mozna spróbować szyfrować
 var session = require('express-session')
 var FileStore = require('session-file-store')(session); //to sprawia, że jak się ustawi, to będzie zapisywał ok a nie w RAM
  var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
-    //store: new FileStore({
-    //    path : './sessions' //to domyślne, ale napiszę żeby bylo widać
-    //}), //FileStore jest var, patrz góra!
+    store: new FileStore({
+        path : './sessions' //to domyślne, ale napiszę żeby bylo widać
+    }), //FileStore jest var, patrz góra!
     secret: 'keyboard cat',
     maxAge: 60000,
     resave : true, //piszą że jak czas ważności, może on musi nadpisywać ostatnie użycie bo wygaśnie inaczej https://github.com/expressjs/session

@@ -101,7 +101,7 @@ var routerFun = function(roomz,io){
             if (room == undefined) { console.log("ŁOJENYJEJKU"); return; }
             room.unready.delete(unm);
             room.ready.set(unm, true);
-            if (room.unready.size == 0) { console.log("\nPOCZ\n"); io.to(rnm).emit('begin game'); }
+            if (room.unready.size == 0 && room.ready.size == 2) { console.log("\nPOCZ\n"); io.to(rnm).emit('begin game'); } //tylko dla 2 -osob.
             else io.to(rnm).emit('sbd entered',room.connectedPeople);
         });
         socket.on('sbd entered', function(room) { //to chyba nic nie robi

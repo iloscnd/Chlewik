@@ -6,25 +6,34 @@ var express = require('express');
 
 //var inrooms = new Map();
 
-//sprawdzenie poziomu uprawnień - 
-//starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
-//i tak by starczyło, bo je przechodzi po kolei
-//!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
-    /// no więc tu jest pewien problem, bo trzeba sprawdzać w funkcjach niżej i tak, czy się nazwa pokoju też zgadza - ew. nazwę czytać z sesji i tyle
-router.use('/', (req,res,next) => {
-    var ses = req.session;
-    console.log(ses.legit.roomEntered+"WRACAM???4");
-    console.log(req.session.legit.roomEntered+"WRACAM???4");
-    if (!ses.legit.roomEntered) { 
-        console.log(ses.legit.roomEntered+"WRACAM4");
-        res.redirect('/'); 
-        return; 
-    }
-    req.session.urlLegit.roomEntered = ses.legit.roomEntered;
-    next();
-});
 
 var routerFun = function(roomz,io){
+
+    //trzeba roomz, więc w routerFun
+    //sprawdzenie poziomu uprawnień - 
+    //starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
+    //i tak by starczyło, bo je przechodzi po kolei
+    //!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
+        /// no więc tu jest pewien problem, bo trzeba sprawdzać w funkcjach niżej i tak, czy się nazwa pokoju też zgadza - ew. nazwę czytać z sesji i tyle
+    router.use('/', (req,res,next) => {
+
+        //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
+        if(req.session.legit.roomEntered && roomz.get(req.session.legit.roomEntered) == undefined) delete req.session.legit.roomEntered; //B. WAŻNE!!! jak ktoś usunie pokój jak ten nie połączony
+
+        var ses = req.session; //ew. sprawdzać na null
+        console.log(ses.legit.roomEntered+"WRACAM???4");
+        console.log(req.session.legit.roomEntered+"WRACAM???4");
+
+        if (!ses.legit.roomEntered) { 
+            console.log(ses.legit.roomEntered+"WRACAM4");
+            res.redirect('/'); 
+            return; 
+        }
+        req.session.urlLegit.roomEntered = ses.legit.roomEntered;
+        next();
+    });
+
+
 
     //io.use(function(socket, next){
     //    session(socket.handshake, socket.handshake.res, next); //wtedy moge sie dostac do sesji w socket
@@ -35,9 +44,10 @@ var routerFun = function(roomz,io){
     io.on('connection', function(socket) {
         console.log('connected in room');
         socket.on('getInRoom', function() { //rn to na razie nazwa pokoju
-            
-            var rnm = socket.handshake.session.legit.roomEntered;
+            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
             var unm = socket.handshake.session.name;
+            if (rnm == undefined || unm == undefined) { console.log("ŁOJENY"); return; }
             console.log("Jestem "+rnm);
             //console.log(ses);
             //var name = ses.roomname;
@@ -49,8 +59,8 @@ var routerFun = function(roomz,io){
             room.connectedPeople++;
             //room.unready.set(unm, true);
             //inrooms.set(socket,roomname);
-            console.log(room.connectedPeople==undefined);
-            console.log(room.connectedPeople);
+                //console.log(room.connectedPeople==undefined);
+                //console.log(room.connectedPeople);
             console.log(room.name==undefined);
             console.log(room.name);
             //console.log(name);
@@ -61,9 +71,10 @@ var routerFun = function(roomz,io){
             socket.on('disconnect', function() { // UWAGA: TO SIĘ DODA WSZYSTKIM SOCKETOM, TEŻ TYM DO POKOJU ITP
                 //var rnm = inrooms.get(socket); //można czytać z socket.req.ses
                 console.log("socket " + socket.id + "disconnected from room!");
-                var rnm = socket.handshake.session.legit.roomEntered;
+                if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+                var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
                 var unm = socket.handshake.session.name;
-                if (rnm == undefined) { console.log("OJEJKU"); return; }
+                if (rnm == undefined || unm == undefined) { console.log("ŁOJENY"); return; }
                 var room = roomz.get(rnm);
                 if (room == undefined) { console.log("ŁOJENY"); return; } //czemu to się dzieje?
                     //#### bez tego, tylko czasowo
@@ -81,10 +92,13 @@ var routerFun = function(roomz,io){
             }); 
         });
         socket.on('ready', function() {
-            var rnm = socket.handshake.session.legit.roomEntered;
+            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
+            var unm = socket.handshake.session.name;
+            if (rnm == undefined || unm == undefined) { console.log("ŁOJENY"); return; }
             console.log("gotowy w "+rnm);
             var room = roomz.get(rnm); 
-            var unm = socket.handshake.session.name;
+            if (room == undefined) { console.log("ŁOJENYJEJKU"); return; }
             room.unready.delete(unm);
             room.ready.set(unm, true);
             if (room.unready.size == 0) { console.log("\nPOCZ\n"); io.to(rnm).emit('begin game'); }
@@ -161,7 +175,7 @@ console.log(JSON.stringify(req.session.urlLegit));
         console.log("\n TWORZĘ \n");
 
         var roomName = req.session.legit.roomEntered;
-        
+        var unm = req.session.name;
         var room = roomz.get(roomName); //ew. spr czy nie undefined
         if (room == undefined) {res.redirect('/redirectDefault'); return; }
         if (room.game == undefined) {
@@ -171,19 +185,29 @@ console.log(JSON.stringify(req.session.urlLegit));
                 player : [undefined, undefined],
                 turn : [0],   
                 srcs : ["tictac/empty.png","tictac/tic.png","tictac/tac.png"],
-                end : [0]
+                end : [0],
+                playersIn : new Map()
             };
         };
         var game = room.game;
         if(!game.player[0])
-            game.player[0] = req.session.name;
+            game.player[0] = unm;
         else
-            if(!game.player[1] && game.player[0] != req.session.name)
-                game.player[1] = req.session.name;
+            if(!game.player[1] && game.player[0] != unm)
+                game.player[1] = unm;
         
         game.end = 0;
 
         req.session.legit.inGame = 1;
+
+        //gotowość do gry trzeba usuwać z pokoju już przy wchodzeniu, bo przy wychodzeniu z gry pierwszy co wyjdzie usuwa grę
+        //a wtedy innym się anulują uprawnienia do robienia z nią czegoś i  przy okazji automatycznie im się usuwa bycie w niej
+        //ale nie mogą ustawić sobie przy wyjściu, bo to wymaga tych uprawnień
+        room.ready.delete(unm);
+        room.unready.set(unm, true);
+
+        game.playersIn.set(unm, true);
+
 
         console.log(roomName);
         console.log(room);

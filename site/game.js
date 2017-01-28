@@ -4,21 +4,7 @@ var router = express.Router();
 
 router.use( express.static('./static'));
 
-//sprawdzenie poziomu uprawnień - 
-//starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
-//i tak by starczyło, bo je przechodzi po kolei
-//!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
-  /// !! tu jest problem, bo trzeba w funkcji też sprawdzać czy nazwa pokojogry się zgadza - ew. nazwę czytać z sesji i tyle
-router.use('/', (req,res,next) => {
-    var ses = req.session;
-    if (!ses.legit.inGame) { 
-        console.log(ses.legit.inGame+"WRACAM5");
-        res.redirect('/'); 
-        return; 
-    }
-    req.session.urlLegit.inGame = ses.legit.inGame; //1, ale tak bezpiecznie; bez tego się pętli w neiskończoność przekierowując że wolno ale nie wolno
-    next();
-});
+
 
 var returnRouter = function(roomz,io) {
 
@@ -30,6 +16,28 @@ var returnRouter = function(roomz,io) {
     var end = 0;
     */ // moved to /inroom/createRoom
     
+    //trzeba roomz, więc w routerFun
+    //sprawdzenie poziomu uprawnień - 
+    //starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
+    //i tak by starczyło, bo je przechodzi po kolei
+    //!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
+    /// !! tu jest problem, bo trzeba w funkcji też sprawdzać czy nazwa pokojogry się zgadza - ew. nazwę czytać z sesji i tyle
+    router.use('/', (req,res,next) => {
+
+        //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
+        if( req.session.legit.roomEntered == undefined) delete req.session.legit.inGame; //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
+        else if( roomz.get(req.session.legit.roomEntered) == undefined) delete req.session.legit.inGame; //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
+        else if( (roomz.get(req.session.legit.roomEntered)).game == undefined) delete req.session.legit.inGame; //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
+
+        var ses = req.session;
+        if (!ses.legit.inGame) { 
+            console.log(ses.legit.inGame+"WRACAM5");
+            res.redirect('/'); 
+            return; 
+        }
+        req.session.urlLegit.inGame = ses.legit.inGame; //1, ale tak bezpiecznie; bez tego się pętli w neiskończoność przekierowując że wolno ale nie wolno
+        next();
+    });
     
 
 
@@ -44,7 +52,7 @@ console.log(JSON.stringify(req.session.urlLegit));
             res.redirect("/");
         }
         else*/
-
+        
         var roomName = req.session.legit.roomEntered;
         var room = roomz.get(roomName);
         console.log(roomName);
@@ -66,13 +74,21 @@ console.log(JSON.stringify(req.session.urlLegit));
         var rnm = req.session.legit.roomEntered;
         var room = roomz.get(rnm);
         console.log("\n\n " + room + "\n\n ");
-        
+        if (room == undefined) { console.log("ŁOJENYONIE"); return; }
         //jak gra już nie istnieje, to nie można zczytać
-        if(room.game != undefined && room.game.end[0]) { //          ZROBIĆ       jak guru wyjdzie to koniec, bo tylko on może usuwać
-            delete room.game; //może ktoś zmienić skrypt, ale przy końcu gry tylko jak wszyscy, to się stan nie wyzeruje w pokoju, a dużo gier i tak się nie da
-        }
-        delete req.session.legit.inGame;
 
+        if(room.game != undefined) {
+            room.game.playersIn.delete(unm);
+
+            //to ma sens tylko do usunięcia gdy wszyscy wyjdą - a ja nie dodawałem takiej opcji na razie, ale chyba obsluguję playersIn w miarę
+            if(room.game.end[0] || room.game.playersIn.size == 0) { //          ZROBIĆ       jak guru wyjdzie to koniec, bo tylko on może usuwać
+                delete room.game; //może ktoś zmienić skrypt, ale przy końcu gry tylko jak wszyscy, to się stan nie wyzeruje w pokoju, a dużo gier i tak się nie da
+            }
+            delete req.session.legit.inGame;
+        }
+
+        //zrobione przy wchodzeniu, opisane czemu, ale zostawię bo czemu nie
+        ///console.log("\n\n\nNEGOTOWY" + unm + "\n\n\n\n");
         room.ready.delete(unm);
         room.unready.set(unm, true);
 
@@ -81,7 +97,7 @@ console.log(JSON.stringify(req.session.urlLegit));
     });
 
 
-    //na arzie emitowane do wszystkich, trzeba zmienić ż etu wtyczki też w pokoju
+    //na arzie emitowane do wszystkich, trzeba zmienić że tu wtyczki też w pokoju
     io.on('connection', function(socket){
        // console.log(socket);
        console.log('A socket with sessionID ' + socket.client.id + ' connected!');
@@ -94,8 +110,12 @@ console.log(JSON.stringify(req.session.urlLegit));
        //console.log(socket.request.session+ "\n\n:::\n\n"); //nie ma jak ten middleware (express-socket.io-session)
        
        //zmienić, żeby sprawdzał czy aby na pewno nie ma w połowie undefined
-       var roomName = socket.handshake.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
-       var room = roomz.get(roomName);
+       if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+       var rnm = socket.handshake.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
+       //var unm = socket.handshake.session.name;
+       if (rnm == undefined) { console.log("ŁOJENY"); return; }
+       //var roomName = socket.handshake.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
+       var room = roomz.get(rnm);
        
        var game;// = room.game;
        var state;// = game.state;
@@ -113,8 +133,10 @@ console.log(JSON.stringify(req.session.urlLegit));
         
         end = 0; */ //moved to creating game
         socket.on('gotInGame', function() {
-            var rnm = socket.handshake.session.legit.roomEntered;
+            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
             var unm = socket.handshake.session.name;
+            if (rnm == undefined || unm == undefined) { console.log("ŁOJENY"); return; }
             console.log("W grze "+unm);
             //to MUSZĄ byś obiekty te wszystkie pola, żeby je mógł zmieniać
             //tzn tylko wtedy przekaże referencję, a nie wartość
@@ -149,7 +171,9 @@ console.log(JSON.stringify(req.session.urlLegit));
 
         socket.on('FieldClicked',function(msg){
            // console.log("Socket with id " + socket.client.id +" and name " + socket.handshake.session.name +  " clicked filed number " + msg);
-            var rnm = socket.handshake.session.legit.roomEntered;
+            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
+            if (rnm == undefined) { console.log("ŁOJENY"); return; }
             console.log("!!!!!!!!\n"+JSON.stringify(game)+"///////"+socket.client.id);
             if(state[msg] == 0 && !end[0]){
                 if(player[turn[0]%2] == socket.handshake.session.name){
@@ -183,7 +207,7 @@ console.log(JSON.stringify(req.session.urlLegit));
 
                         ///delete game; //to NIE DZIAŁA, jest tylko czytanie z sesji
 
-                        delete room.game; //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
+                        delete room.game; // to chyba nawet działa, bo żaden nie ma uprawnień na /leave w grze potem   //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
 
                         end[0] = 1;
 
@@ -199,7 +223,9 @@ console.log(JSON.stringify(req.session.urlLegit));
         });
 
         socket.on('reset', function(msg){
-            var rnm = socket.handshake.session.legit.roomEntered;
+            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
+            if (rnm == undefined) { console.log("ŁOJENY"); return; }
             for(i=0; i<9; i++){
                 io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
                 state[i] = 0; //i tak nie starczy chyba do nowej gry??

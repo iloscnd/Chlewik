@@ -51,8 +51,20 @@
       })
 
       socket.on('won', function(msg){
-        alert(msg + " wygrał!");
-        window.location = "/rooms";
+        //tu usunąć z sesji inGame jakoś
+        //console.log("KONIEC MA BYĆ");
+        //$("#"+"p1").text(JSON.stringify(socket.handshake.session.legit.inGame)); //jak dałem document.getElById, to nie aktualizował bo nie ajax
+        //delete socket.handshake.session.legit.inGame; //a może to zadziała? w końcu wkaźnik to wskaźnik
+        // to delete nie ma szans zadziałać, bo ten wskaźnik się odnosi do czegoś na serwerze,tu nie ma i to w ogóle psuje, bo tu nie mamy dostępu do sesji
+        //$("#"+"p2").text(JSON.stringify(socket.handshake.session.legit.inGame));
+
+        //tu sobie emituje żeby wyjść - jak zmieni użytkownik coś w skrypcie, to gra mu przestanie działać póki nie zamknie przeglądarki i tyle, a innym nie
+        socket.emit('getOutGame');
+
+        socket.on('gotOutGame', function(){ 
+          alert(msg + " wygrał!");
+          window.location = "/rooms/room/?roomName="+ "<%=ses.legit.roomEntered%>";
+        });
       });
 
     </script>

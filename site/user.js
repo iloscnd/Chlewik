@@ -29,7 +29,7 @@ router.all('/enter', (req,res) =>{
     var flag = false;
     //od razu że nie undefined i że jak trzeba - ale uwaga, bo bez .pwd to cały obiekt
     if (userz.get(name) != undefined &&  userz.get(name).pwd == pwd) flag = true;
-console.log(JSON.stringify(req.session.legit));
+console.log("PIĘĆ"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
@@ -38,14 +38,15 @@ console.log(JSON.stringify(req.session.urlLegit));
         req.session.name = req.body.name;
         req.session.guest = 0;
         res.redirect("/rooms");
+        return; //a może by res.end()?
     }
-    else { res.redirect('/redirectDefault'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+else { res.redirect('/redirectDefault'); return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
     //co prawda w ten sposób sprawdza się 2 razy :/
 });
 
 router.post('/create', (req,res) =>{
     //TODO check if not colliding data, pwd==pwd2 etc
-console.log(JSON.stringify(req.session.legit));
+console.log("SZEŚĆ"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));   
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     /*if(req.session.legit.entered)
@@ -67,14 +68,15 @@ console.log(JSON.stringify(req.session.urlLegit));
         req.session.name = req.body.name;
         req.session.guest = 0;
         res.redirect('/rooms');
+        return; //a może by res.end()?
     }
-    else { res.redirect('/redirectDefault'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+    else { res.redirect('/redirectDefault');return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
     
 });
 
 
 router.post('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
-console.log(JSON.stringify(req.session.legit));
+console.log("7"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     console.log("czyWolny\n");
@@ -87,10 +89,11 @@ console.log(JSON.stringify(req.session.urlLegit));
     if (flag) resp="OK"; else resp="NO";
     console.log(resp+"\n");
     res.send(resp);
+    return; //a może by res.end()?
 });
 
 router.post('/ajaxValid', (req,res) => { //zmienić jakoś na post
-console.log(JSON.stringify(req.session.legit));
+console.log("8"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     console.log("czyDobre\n");
@@ -111,12 +114,14 @@ console.log(JSON.stringify(req.session.urlLegit));
     if (flag) resp="BAD"; //było NOONE, ale nie powinien mówić które źle 
     console.log(resp+"\n");
     res.send(resp);
+    return; //a może by res.end()?
 });
 
 // !!! tu już te do których trzeba być zalogowanym
 router.use('/', (req,res,next) => {
     var ses = req.session;
     if (!ses.legit.entered) { 
+        console.log(ses.legit.entered+"WRACAM2");
         res.redirect('/'); 
         return; 
     }
@@ -125,7 +130,7 @@ router.use('/', (req,res,next) => {
 });
 
 router.all("/logout",(req,res)=>{
-console.log(JSON.stringify(req.session.legit));
+console.log("9"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     /*if(!req.session.legit.entered)
@@ -137,14 +142,16 @@ console.log(JSON.stringify(req.session.urlLegit));
     if(req.session.legit.entered==1 && req.session.guest!=1) {
         req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
         res.redirect('/');
+        return; //a może by res.end()?
     }
     else{
         res.redirect('/');
+        return; //a może by res.end()?
     }
 });
 
 router.all("/delete",(req,res)=>{
-console.log(JSON.stringify(req.session.legit));
+console.log("10"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     /*if(!req.session.legit.entered)
@@ -157,9 +164,11 @@ console.log(JSON.stringify(req.session.urlLegit));
         userz.delete(name);
         req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
         res.redirect('/');
+        return; //a może by res.end()?
     }
     else{
         res.redirect('/');
+        return; //a może by res.end()?
     }
 });
 

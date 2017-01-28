@@ -21,10 +21,11 @@ router.get("/",(req,res) =>{
     //if(req.session.legit.entered)
     //    res.redirect('/rooms');
     //else
-console.log(JSON.stringify(req.session.legit));
+console.log("RAZ"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         res.render("guestlogin.ejs");
+        return; //a może by res.end()?
 });
 
 
@@ -39,10 +40,11 @@ router.post('/ajaxIsFree', (req,res) => {
     var resp = "";
     if (flag) resp="OK"; else resp="NO";
     console.log(resp+"\n");
-console.log(JSON.stringify(req.session.legit));
+console.log("DWA"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     res.send(resp);
+    return; //a może by res.end()?
 });
 
 router.all("/enter",(req,res)=>{
@@ -58,7 +60,7 @@ router.all("/enter",(req,res)=>{
     var flag = true;
     if (guestz.get(name) != undefined) flag = false;
     if (flag) {
-console.log(JSON.stringify(req.session.legit));
+console.log("TRZY"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         var newGuest = {
@@ -70,14 +72,16 @@ console.log(JSON.stringify(req.session.urlLegit));
         req.session.guest = 1;
         console.log("CHCE WEJŚĆ");
         res.redirect('/rooms');
+        return; //a może by res.end()?
     }
-    else { console.log("JUŻ JEST"); res.redirect('/redirectDefault'); } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+else { console.log("JUŻ JEST"); res.redirect('/redirectDefault'); return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
 });
 
 // !! to już część gdzie są wymagane uprawnienia - dzięki temu, że po tamtej, to tamte wcześniej są dostępne bez
 router.use('/', (req,res,next) => {
     var ses = req.session;
     if (!ses.legit.entered) { 
+        console.log(ses.legit.entered+"WRACAM1");
         res.redirect('/'); 
         return; 
     }
@@ -91,7 +95,7 @@ router.all("/logout",(req,res)=>{
         res.redirect("/");
         return;
     }*/
-console.log(JSON.stringify(req.session.legit));
+console.log("CZTERY"+JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
     var name = req.session.name;
@@ -101,9 +105,11 @@ console.log(JSON.stringify(req.session.urlLegit));
         guestz.delete(name);
         req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
         res.redirect('/');
+        return; //a może by res.end()?
     }
     else{
         res.redirect('/');
+        return; //a może by res.end()?
     }
 });
 

@@ -26,6 +26,8 @@ var routerFun = function(roomz,io){
     //io.use(function(socket, next){
     //    session(socket.request, socket.request.res, next); //wtedy moge sie dostac do sesji w socket
     //});
+    var gameRouter = require('./game')(roomz,io);
+    app.use('/game',gameRouter);
 
     io.on('connection', function(socket) {
         console.log('connected in room');
@@ -96,7 +98,9 @@ console.log(JSON.stringify(req.session.legit));
 console.log(JSON.stringify(req.session.urlLegit));    
 /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
-        var name = req.query.roomName;
+        var name = req.session.legit.roomEntered; //req.query.roomName; // UWAGA! zmieniłem, bo inaczej mógłby wejść do innego jeśli hasła by się zgadzały
+        //nazwa pokoju w pasku adresu jest dla bajeru żeby tam też widać gdzie się jest
+
         /*if(!req.session.legit.entered)
         {
             res.redirect("/");
@@ -104,7 +108,7 @@ console.log(JSON.stringify(req.session.urlLegit));
         }*/
         var r = roomz.get(name)
         if (r == undefined) { res.redirect('/rooms'); console.log("ojej"); return; }
-        if (r.hasPwd) {
+        if (r.hasPwd) { //niepotrzebne, bo w sesji się mu daje że w pokoju tylko jak już poda hasło
             var pwd = req.session.roomPwd;
             if (r.pwd != pwd) { console.log("ZŁE HASŁO"); res.redirect('/rooms?err=pwd'); return; }   //to wszystko powinien być ajax z roomView, no ale jak pytać o wpisane w pole które może nie istnieć... EDIT - nie wyświetlać pola, a istnieje
         }
@@ -117,7 +121,36 @@ console.log(JSON.stringify(req.session.urlLegit));
         res.render('inroom.ejs', model);
     });
 
-    
+    router.all('/createGame', (req,res) => { // !!! to powinno tak naprawdę przekierowywać do tworzenia gry danego typu, z podpiętym routerem gra danego typu, tam 2 poziomy uprawnień i tworzenie na tym bez
+console.log(JSON.stringify(req.session.legit));
+console.log(JSON.stringify(req.session.urlLegit));    
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }        
+
+        var roomName = res.session.legit.roomEntered;
+        
+        var room = roomz.get(roomName); //ew. spr czy nie undefined
+        if (room == undefined) {res.redirect('/redirectDefault'); return; }
+        if (room.game == undefined) {
+            room.game = {
+                //gametype
+                state : [0,0,0,0,0,0,0,0,0],
+                players : [undefined, undefined],
+                turn : 0,   
+                srcs : ["tictac/empty.png","tictac/tic.png","tictac/tac.png"],
+                end : 0
+            };
+        };
+        var game = room.game;
+        if(!game.player[0])
+            game.player[0] = req.session.name;
+        else
+            if(!game.player[1] && game.player[0] != req.session.name)
+                game.player[1] = req.session.name;
+        
+        game.end = 0;
+
+        res.redirect('/rooms/room/?roomName=' + roomName + '/game'); //można by pewnie napisać ~url + /game ; nazwa pokoju w adresie dla picu
+    });
 
     return router;
 }

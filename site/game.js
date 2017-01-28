@@ -19,15 +19,18 @@ router.use('/', (req,res,next) => {
     next();
 });
 
-var returnRouter = function(io) {
+var returnRouter = function(roomz,io) {
 
+    /*
     var state = [0,0,0,0,0,0,0,0,0];
     var player = [undefined, undefined];
     var turn = 0;   
     var srcs = ["tictac/empty.png","tictac/tic.png","tictac/tac.png"]
     var end = 0;
-
+    */ // moved to /inroom/createRoom
     
+    
+
 
     router.get('/', function(req, res){
 
@@ -40,7 +43,14 @@ console.log(JSON.stringify(req.session.urlLegit));
             res.redirect("/");
         }
         else*/
-            res.render('game.ejs',{state : state, srcs:srcs});
+
+        var roomName = roomz.get(req.session.legit.roomEntered);
+        var room = roomz.get(roomName);
+        if (room == undefined) {res.redirect('/redirectDefault'); return; }
+        var game = room.game;
+        if (game == undefined) {res.redirect('/redirectDefault'); return; }
+
+            res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session});
     });
 
 
@@ -49,15 +59,25 @@ console.log(JSON.stringify(req.session.urlLegit));
        // console.log(socket);
        console.log('A socket with sessionID ' + socket.client.id + ' connected!');
 
+       //########  przydałoby się tu i w tych funkcjach niżej sprawdzać czy gra jeszcze istnieje
 
+       var roomName = socket.request.session.legit.roomEntered;
+       var room = roomz.get(roomName);
+       var game = room.game;
+       var state = game.state;
+       var player = game.player;
+       var turn = game.turn;
+       var srcs = game.srcs;
+       var end = game.end;
 
+       /*
         if(!player[0])
             player[0] = socket.request.session.name;
         else
             if(!player[1] && player[0] != socket.request.session.name)
                 player[1] = socket.request.session.name;
         
-        end = 0;
+        end = 0; */ //moved to creating game
         socket.on('gotInGame', function() {
             var rnm = socket.request.session.legit.roomEntered;
             var unm = socket.request.session.name;
@@ -107,6 +127,10 @@ console.log(JSON.stringify(req.session.urlLegit));
                         }*/
                         state = [0,0,0,0,0,0,0,0,0]; //dla jednej gry
                         player = [undefined, undefined];
+
+                        delete game;
+                        // tu jakoś zrobić, żeby przekierował tam gdzie trzeba, albo w ejs to zrobić
+
                         io.to(rnm+"_game").emit('won', socket.request.session.name);
                         
                         end = 1;
@@ -128,8 +152,8 @@ console.log(JSON.stringify(req.session.urlLegit));
 
         socket.on('disconnect', function(){
                 console.log('A socket with sessionID ' + socket.client.id + ' disconnected!');
-                delete socket.request.session.legit.inGame;
-                //check if disconnected user was a player(and is not having any kind of shit)
+                //delete socket.request.session.legit.inGame; //to tak nie działa
+                //check if disconnected user was a player(and is not having any kind of )
         });
        // console.log(socket.request.session.name);
     });

@@ -108,8 +108,9 @@ app.use('/rooms', roomsRouter);
 var userRouter = require('./user');
 app.use('/user', userRouter);
 
-var gameRouter = require('./game')(io);
-app.use('/game',gameRouter);
+//moved to inroom
+//var gameRouter = require('./game')(io);
+//app.use('/game',gameRouter);
 
 app.get("/", (req, res) =>{
 console.log(JSON.stringify(req.session.legit));

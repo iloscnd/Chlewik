@@ -52,7 +52,7 @@
 
       socket.on('won', function(msg){
         alert(msg + " wygrał!");
-        window.location = "/rooms";
+        window.location = "/rooms/room/?roomName="+ "<%=ses.legit.roomEntered%>";
       });
 
     </script>

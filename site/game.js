@@ -66,7 +66,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
         var p1vis = "hidden";
         var p2vis = "visible";
-        if(game.turn[0]=0){
+        if(game.turn[0] == 0){
             p2vis = "hidden";
             p1vis = "visible";  
         }
@@ -333,7 +333,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
                 if(player[turn[0]%2] == socket.handshake.session.name){
                     io.to(rnm+"_game").emit('change',[msg,turn[0]%2]);
                     state[msg] = turn[0]%2 + 1;
-                    turn[0]++;
+                    turn[0] = (turn[0]+1)%2;
                     console.log(state);
                     //check if won
                     won = false;

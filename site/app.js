@@ -10,6 +10,8 @@
 
 var userz = new Map();  //tu, bo chcę sprawdzać też w /rooms czy aktualne uprawnienia
 var guestz = new Map(); 
+var roomz = new Map(); // tu, bo tu jest usuwanie na timeout
+
 
 var http = require('http');
 var express = require('express');
@@ -17,12 +19,16 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');//mozna spróbować szyfrować
 var session = require('express-session')
 var FileStore = require('session-file-store')(session); //to sprawia, że jak się ustawi, to będzie zapisywał ok a nie w RAM
+
+var sesStore = new FileStore({
+        path : './sessions', //to domyślne, ale napiszę żeby bylo widać
+        reapInterval : 60 //w sekundach po jakim czasie usuwać wygaśnięte
+    }); //FileStore jest var, patrz góra!
+
  var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
-    store: new FileStore({
-        path : './sessions' //to domyślne, ale napiszę żeby bylo widać
-    }), //FileStore jest var, patrz góra!
+    store: sesStore,
     secret: 'keyboard cat',
-    maxAge: 60000,
+    maxAge: 10*60000,
     resave : true, //piszą że jak czas ważności, może on musi nadpisywać ostatnie użycie bo wygaśnie inaczej https://github.com/expressjs/session
     saveUninitialized : false //nie zapisuj póki nic w niej nie ma jak rozumiem
 });
@@ -136,7 +142,7 @@ app.use('/guest', guestRouter);
 var registerRouter = require('./register');
 app.use('/register', registerRouter);
 
-var roomsRouter = require('./rooms')(io,userz,guestz);
+var roomsRouter = require('./rooms')(roomz,userz, guestz,io);
 app.use('/rooms', roomsRouter);
 
 var userRouter = require('./user')(userz);
@@ -182,12 +188,68 @@ app.use((req,res,next) => {
 
     //res.render('404.ejs', { url : req.url }); 
     //chcemy żeby mu wróciło do domyślnej
-    console.log("DOMYŚL SIĘ"+req.url);//o ty szmato
+    console.log("DOMYŚL SIĘ"+req.url);//o ty nędzny chrome
     res.redirect('/redirectDefault');
     return; //a może by res.end()?
 });
 
+//timeout żeby wywalało jak ktoś się sam nie wyloguje itp
+setInterval( function() {
 
+    var date = new Date();
+    //io.emit('timeout', date); //wszystkim; mam nadzieję, że można tak obiekt i on to ogarnie
+    //no ale nie mogę emitować przez socety bo to ma właśnie ogarniać sytuację kiedy ich nie ma
+
+    //tu potrzebne jest przeglądnięcie wszystkich sesji z katalogu i zmiana uprawnień nieaktualnym z gry i pokoju,
+    //a nieaktualnym z logowaniem w ogóle usunięcie sesji
+    //sesStore. //tak się nie da chyba dostać do sesji, a na pewno nie piszą jak na npm, beznadziejni są
+
+    //jednak przeglądamy po userz, guestz, roomz
+    roomz.forEach( (value, key, map) => { 
+            var game = value.game;
+            if (game != undefined) {
+                if (game.playersConnected == undefined || game.playersConnected==0) {
+                var when = game.lastConnected;
+                if(when != undefined) {
+                    var del = new Date(when.getTime() + 60000); //data do usuwania minutę po tamtej
+                    if (date.getTime() > del.getTime()) {
+                        console.log("||||||||||||||||||||||usuwam grę w pokoju" + value.name);
+                        delete game;
+                    }
+                }
+            }
+            }
+            if (value.playersConnected == undefined || value.playersConnected==0) {
+                var when = value.lastConnected;
+                if(when != undefined) {
+                    var del = new Date(when.getTime() + 60000); //data do usuwania minutę po tamtej
+                    if (date.getTime() > del.getTime()) {
+                        roomz.delete(key);
+                        console.log("||||||||||||||||||||usuwam pokój" + value.name);
+                    }
+                }
+            }
+        }); 
+
+        guestz.forEach( (value, key, map) => { 
+            console.log(value);
+            console.log(value.connected);
+            console.log(value.lastConnected);
+            if (value.connected == undefined || value.connected == 0) {
+                var when = value.lastConnected;
+                if(when != undefined) {
+                    var del = new Date(when.getTime() + 3*60000); //gościa to jednak trochę dłużej, mogła mu się karta zamknąć czy co
+                    if (date.getTime() > del.getTime()) {
+                        guestz.delete(key);
+                        console.log("||||||||||||||||||||usuwam gościa" + value.name);
+                    } 
+                }
+            } 
+        }); 
+
+        //ale użytkowników przecie mam nie usuwać bo to użytkownicy...
+
+}, 60*1000); //co minutę, bo i po co częściej a tak nie obciąża serwera
 
 server.listen(process.env.PORT || 3000);
 

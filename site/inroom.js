@@ -7,7 +7,7 @@ var express = require('express');
 //var inrooms = new Map();
 
 
-var routerFun = function(roomz,io){
+var routerFun = function(roomz,userz, guestz,io){
 
     //trzeba roomz, więc w routerFun
     //sprawdzenie poziomu uprawnień - 
@@ -17,8 +17,11 @@ var routerFun = function(roomz,io){
         /// no więc tu jest pewien problem, bo trzeba sprawdzać w funkcjach niżej i tak, czy się nazwa pokoju też zgadza - ew. nazwę czytać z sesji i tyle
     router.use('/', (req,res,next) => {
 
+        console.log("W2"+JSON.stringify(req.session.legit));
+        console.log(";;;;;;"+roomz.get(req.session.legit.roomEntered));
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
-        if(req.session.legit.roomEntered && roomz.get(req.session.legit.roomEntered) == undefined) delete req.session.legit.roomEntered; //B. WAŻNE!!! jak ktoś usunie pokój jak ten nie połączony
+        //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
+        if(req.session.legit.roomEntered && roomz.get(req.session.legit.roomEntered) == undefined) { console.log("usuwam że w pokoju"); delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie pokój jak ten nie połączony
 
         var ses = req.session; //ew. sprawdzać na null
         console.log(ses.legit.roomEntered+"WRACAM???4");
@@ -38,7 +41,7 @@ var routerFun = function(roomz,io){
     //io.use(function(socket, next){
     //    session(socket.handshake, socket.handshake.res, next); //wtedy moge sie dostac do sesji w socket
     //});
-    var gameRouter = require('./game')(roomz,io);
+    var gameRouter = require('./game')(roomz,userz, guestz,io);
     router.use('/game',gameRouter);
 
     io.on('connection', function(socket) {
@@ -65,10 +68,34 @@ var routerFun = function(roomz,io){
             console.log(room.name);
             //console.log(name);
             //console.log(room);
+
+
+            socket.handshake.session.roomConnected = 1;
+            delete socket.handshake.session.roomDisconnected;
+            socket.handshake.session.save();
+
+            if (!room.playersConnected) room.playersConnected = 0;
+            room.playersConnected ++ ;
+            delete room.lastConnected;
+
+            //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
+            if (socket.handshake.session.guest) {
+                        var guest = guestz.get(socket.handshake.session.name);
+                        if (guest == undefined ) return;
+                        if (!guest.connected) guest.connected = 1;
+                        delete guest.lastConnected;
+                    }
+                    else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                        var user = userz.get(socket.handshake.session.name);
+                        if (user == undefined ) return;
+                        if (!user.connected) user.connected = 1;
+                        delete user.lastConnected;
+                    }
+
             io.to(roomname).emit('sbd entered',room.connectedPeople); //do wszystkich, się też czyli człeka wliczy i pokaże
 
             //w ten sposób odejmą tylko te co były w pokoju jak wyjdą
-            socket.on('disconnect', function() { // UWAGA: TO SIĘ DODA WSZYSTKIM SOCKETOM, TEŻ TYM DO POKOJU ITP
+            socket.on('disconnect', function() { // UWAGA: TYLKO SOCKETOM Z POKOJU - jak ktoś np. w grze, to będzie tu rozłączony, ale głębiej połączony
                 //var rnm = inrooms.get(socket); //można czytać z socket.req.ses
                 console.log("socket " + socket.id + "disconnected from room!");
                 if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
@@ -85,7 +112,42 @@ var routerFun = function(roomz,io){
                     //    roomz.delete(rnm);
                     //}
                     //console.log("JUŻ USUWAM");
-                delete socket.handshake.session.legit.roomEntered; //musi usunąć 
+
+                var date = new Date(); //bierze aktualną
+                // /var tm = date.getTime(); //jednak nie wziąłem tego
+                delete socket.handshake.session.roomConnected;
+                socket.handshake.session.roomDisconnected = date;
+                
+                var date = new Date(); //bierze aktualną
+                // /var tm = date.getTime(); //jednak nie wziąłem tego
+
+                if (!room.playersConnected) room.lastConnected = date;
+                else {
+                    room.playersConnected -- ;
+                    if (room.playersConnected == 0) {
+                        room.lastConnected = date;
+                        delete room.playersConnected;
+                    }
+                }
+
+                //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
+                //jak dodaje na wejściu, to musi usunąć na wyjściu
+                if (socket.handshake.session.guest) {
+                            var guest = guestz.get(socket.handshake.session.name);
+                            if (guest == undefined ) return;
+                            guest.lastConnected = date;
+                            delete guest.connected;
+                        }
+                        else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                            var user = userz.get(socket.handshake.session.name);
+                            if (user == undefined ) return;
+                            user.lastConnected = date;
+                            delete user.connected;
+                        }
+
+                //delete socket.handshake.session.legit.roomEntered; //NIE!!! ma nie usuwać z gry w ten sposób
+                //socket.handshake.session.save();
+
                 room.unready.delete(unm);
                 room.ready.delete(unm);
                 io.to(rnm).emit('sbd entered',room.connectedPeople);

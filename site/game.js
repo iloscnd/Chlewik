@@ -283,7 +283,18 @@ var returnRouter = function(roomz,io) {
                 io.to(rnm+"_game").emit('chat message', "<ul><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</ul>");
             }
         });
+        socket.on('surrender',function(msg){
+            
+            delete room.game; // to chyba nawet działa, bo żaden nie ma uprawnień na /leave w grze potem   //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
+            end[0] = 1;
 
+            var winner = player[0];
+            if( socket.handshake.session.name == winner)
+                winner = player[1];
+
+            io.to(rnm+"_game").emit('won', winner);
+        });
+        
         //to pójdzie do kosza
         socket.on('reset', function(msg){
             if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { 

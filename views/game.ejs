@@ -29,7 +29,7 @@
           <tr> <% } %>
       <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
     </table>
-
+    <button id="surr" class="button">Poddaj się</button>
     
     <script>
       var socket = io();
@@ -47,6 +47,10 @@
         $('#chatMsg').val('');
         return false;
       });
+
+      $('#surr').click(function(){
+        socket.emit('surrender',null )
+      })
 
       socket.on('change', function(msg){
         if(msg[1]==0)

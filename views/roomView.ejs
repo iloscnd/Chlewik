@@ -120,11 +120,11 @@
     <center style="margin:0 auto"> 
     
         
-        <div class="containerSpec" style="width:400px">
+        <div class="container" style="width:400px">
             <% if (ses.guest==0) { %> 
-                Zalogowano jako <b class="user"><%= ses.name %></b>
+                <div class="namediv" style="max-width:320px"><p > Zalogowano jako <p class="user" style="width:90%; overflow:hidden; text-overflow:ellpsis"><%= ses.name %></p> </div>
             <% } else { %>
-                Wszedłeś jako gość <b class="guest"><%= ses.name %></b>
+                <div class="namediv" style="max-width:320px"><p > Wszedłeś jako gość <p class="guest" style="width:90%; overflow:hidden; text-overflow:ellpsis"><%= ses.name %></p> </div>
             <% } %>
             <br>
             <br>
@@ -132,10 +132,11 @@
                 <button class="button" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
             </form>
         
-            <br>
+            
             
             <% if (ses.guest==0) { %> 
             
+                <br>
                 <form id='clear' method="POST" action="/user/settings"> <!--  -->
                     <button class="button" name='logout'>Ustawienia konta</button> 
                 </form>
@@ -151,7 +152,7 @@
         
         <br>
         <br>
-        <div class="containerSpec" style="width:400px">
+        <div class="container" style="width:400px">
             <button id='newRoomBt' class="button" >utwórz pokój</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
             <form id ='newRoomForm' method="POST"  action="/rooms/create"  style="display:none"> <!--  -->
                             Nazwa pokoju <br> <input type='text' id="name" name='roomName' style="float:left ; width:100%"><br> <br>
@@ -165,8 +166,8 @@
         <br>
         <br>
         <% roomz.forEach( (value, key, map) => { %>   <!-- czemu domyślny iterator je zwraca w tak głupiej kolejności... -->
-            <div class="container" style="width:400px">
-                <%= value.name %><br> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
+            <div class="containerRoom" style="width:400px">
+                <h3><%= value.name %></h3> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
                 <form id="go_<%= value.name %>" method="POST" action="/rooms/setSessionPwd/?name=<%= value.name %>" > <!--  -->
                     <% if (value.hasPwd) { %>
                         Hasło: <input type='text' id="roomPwd_<%= value.name %>" name='roomPwd' style="width:100%">

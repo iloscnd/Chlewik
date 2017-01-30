@@ -1,7 +1,8 @@
 
 
 body {
-    background-color: cornflowerblue
+    /*background-color: cornflowerblue*/
+    background-image: url("backround.png")
 }
 
 
@@ -26,7 +27,15 @@ body {
     display: inline-block; /*będzie się rozszerzał na dzieci swe*/
 }
 
-.containerSpec {
+.namediv {
+    border: 5px double midnightblue; 
+    padding: 7px; 
+    background: whitesmoke;  
+    border-radius: 15px 15px 15px 15px;
+    display: inline-block; /*będzie się rozszerzał na dzieci swe*/
+}
+
+.containerRoom {
     border: 5px double midnightblue; 
     padding: 15px; 
     background: steelblue;  /*albo cadetblue*/

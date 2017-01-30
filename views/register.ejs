@@ -23,12 +23,12 @@
                 var valname = userName.value.trim();
 
 
-                if (pwd.value != pwd2.value) 
+                if (valpwd != valpwd2) 
                 {
                     err.innerHTML += "hasła się nie pokrywają"
                     flag = false;
                 }
-                if (pwd.value=="")
+                if (valpwd=="")
                 {
                     if (flag == false) err.innerHTML += "<br>";
                     err.innerHTML += "hasło nie może zawierać tylko białych znaków"

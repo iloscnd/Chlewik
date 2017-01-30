@@ -1,0 +1,159 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        
+        <title>
+            Registration in Chlewik
+        </title>
+
+        <script> 
+        window.addEventListener('load', function() {  //bez tego się nie wykona i nie doda
+            var form = document.getElementById('regForm');
+            var pwd = document.getElementById('pwdField');
+            var newPwd2 = document.getElementById('newPwd2Field');
+            var newPwd = document.getElementById('newPwdField');
+            var err = document.getElementById('err');
+            
+            form.onsubmit = function() {
+                //return false;
+                err.innerHTML = "";
+                var flag = true;
+                
+                var valpwd = pwd.value.trim();
+                var valNewPwd2 = newPwd2.value.trim();
+                var valNewPwd = newPwd.value.trim();
+
+
+                if (valNewPwd != valNewPwd2) 
+                {
+                    err.innerHTML += "hasła się nie pokrywają"
+                    flag = false;
+                }
+                
+                //var newPwd = newPwd.value.trim(); //usuwa whitespace na końcach
+                if (valNewPwd == "")
+                {
+                    if (flag == false) err.innerHTML += "<br>";
+                    err.innerHTML += "nowe hasło nie może być puste"
+                    flag = false;
+                }
+
+                
+                    var req=new XMLHttpRequest();
+                    var params = "pwd="+valpwd;
+                    req.open('POST', '/user/ajaxPwd', true);
+                        //ZMIENIONE NA POST
+                        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                        req.setRequestHeader("Content-length", params.length);
+                        req.setRequestHeader("Connection", "close");
+
+                    req.onreadystatechange = function() {
+                        if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                            if(req.responseText != "OK") {
+                                if (flag == false) err.innerHTML += "<br>";
+                                err.innerHTML += "nieprawidłowe stare hasło"
+                                flag = false;
+                                
+                            }
+                            else {
+                                //err.innerHTML += "coś jest nie tak" //już ok
+                                if(pwd.value.trim() == valpwd && newPwd2.value.trim()==valNewPwd2 && newPwd.value.trim()==valNewPwd && flag==true) form.submit(); //jeśli przez czas asynchr. nic nie zmienił
+                            }
+                        }
+                    };
+                    req.send(params);
+                
+                
+                return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź
+
+                
+            };
+
+
+
+
+
+            var delForm = document.getElementById('delForm');
+            var delPwd = document.getElementById('delPwdField');
+            var delErr = document.getElementById('delErr');
+            
+            
+            delForm.onsubmit = function() {
+                //return false;
+                delErr.innerHTML = "";
+                var flag = true;
+                
+                var valpwd = delPwd.value.trim();
+                
+                
+                    var req=new XMLHttpRequest();
+                    var params = "pwd="+valpwd;
+                    req.open('POST', '/user/ajaxPwd', true);
+                        //ZMIENIONE NA POST
+                        req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                        req.setRequestHeader("Content-length", params.length);
+                        req.setRequestHeader("Connection", "close");
+
+                    req.onreadystatechange = function() {
+                        if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                            if(req.responseText != "OK") {
+                                if (flag == false) err.innerHTML += "<br>";
+                                delErr.innerHTML += "nieprawidłowe hasło"
+                                flag = false;
+                                
+                            }
+                            else {
+                                //err.innerHTML += "coś jest nie tak" //już ok
+                                if(delPwd.value.trim() == valpwd) delForm.submit(); //jeśli przez czas asynchr. nic nie zmienił
+                            }
+                        }
+                    };
+                    req.send(params);
+                
+                
+                return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź
+
+                
+            };
+        }); //brak nawiasu ) i kosmos się psułi żadnego błędu nie dał
+
+        </script>
+    </head>
+<!-- nie można tagów ejs w komentarzach  bo jest głupi bezpieczniejsze niż <- i ok -->    
+
+    <body>
+    <center>
+        <a href="/">
+        <img src="placeholderLogo.png" alt="Logo" height=100px width=300px >
+        </a>
+        <p id = "info"><%=info%></p>
+        <br> 
+        <div class="container" style="width:400px; ">
+            <!-- user change jak create tylko że zmienia tylko hasło -->
+            <form id="regForm" method="POST" action="/user/change" style="float:left ; width:100%; " > <!-- height 100% przy niesprecyzowanym kontenera nad bierze wys. całej strony -->
+                        Nowe hasło <br> <input type='password' id='newPwdField' name='newPwd' style="float:left ; width:100%"><br> <br>
+                        Powtórz nowe hasło <br> <input type='password' id='newPwd2Field' name='newPwd2' style="float:left; width:100%"><br> <br>
+                        Stare hasło <br> <input type='password' id='pwdField' name='pwd2' style="float:left; width:100%"><br> <br>
+                        <p id='err' style="color:orange"> </p>
+                        <button type='submit' class="button" >Zmień hasło</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+            </form>
+        </div>
+        <br>
+        <div class="container" style="width:400px; ">
+            <!-- user change jak create tylko że zmienia tylko hasło -->
+            <form id="delForm" method="POST" action="/user/delete" style="float:left ; width:100%; " > <!-- height 100% przy niesprecyzowanym kontenera nad bierze wys. całej strony -->
+                        Hasło <br> <input type='password' id='delPwdField' name='Delpwd' style="float:left; width:100%"><br> <br>
+                        <p id='delErr' style="color:orange"> </p>
+                        <button type='submit' class="button" >Usuń konto<br>(nieodwracalne)</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+            </form>
+        </div>
+        <br>
+        <div class="container" style="width:400px; ">
+            <<form method="POST" action="/rooms" style="float:left ; width:100%; " > <!-- height 100% przy niesprecyzowanym kontenera nad bierze wys. całej strony -->
+                        <button type='submit' class="button" >Wróć do widoku pokojów</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
+            </form>
+        </div>
+    </center>
+    </body>
+</html>
+

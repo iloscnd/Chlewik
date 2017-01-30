@@ -11,7 +11,7 @@
   <body>
     <div id="chatBox" style="float: right; position: relative;   width: 250px; height: 300px">
     
-      <ul id="chat" style="overflow: auto; height:250px" >
+      <ul id="chat" style="overflow: auto; height:250px; list-style-type: none;" >
       
       </ul>
       
@@ -20,7 +20,7 @@
       </form>
     
     </div> 
-    
+
     <table>
       <% for(i = 0; i < 9; i++) {%>
         <% if( i % 3 == 0 && i > 0) {%>
@@ -29,8 +29,15 @@
           <tr> <% } %>
       <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
     </table>
-    <button id="surr" class="button">Poddaj się</button>
-    
+
+    <div style="float:left;">
+      <ul style="list-style-type: none;">
+        <li><img src="tictac/arrow.png" alt="arrow" id="arr1" style="visibility: <%=p1vis%>" ><text id="p1"></text></li>
+        <li><img src="tictac/arrow.png" alt="arrow" id="arr2" style="visibility: <%=p2vis%>" ><text id="p2"></text></li>
+      </ul>
+      <button id="surr" class="button">Poddaj się</button>
+    </div>
+
     <script>
       var socket = io();
       
@@ -53,10 +60,16 @@
       })
 
       socket.on('change', function(msg){
-        if(msg[1]==0)
+        if(msg[1]==0){
           $("#"+msg[0]).attr("src","tictac/tic.png");
-        else
-           $("#"+msg[0]).attr("src","tictac/tac.png");
+          $("#arr1").css('visibility','hidden')
+          $("#arr2").css('visibility','visible')
+        }
+        else{
+          $("#"+msg[0]).attr("src","tictac/tac.png");
+          $("#arr2").css('visibility','hidden')
+          $("#arr1").css('visibility','visible')
+        }
       });
     
       socket.on('clear', function(msg){

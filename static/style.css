@@ -10,7 +10,7 @@ body {
     background-color: mediumblue; /* Green */
     border: none;
     color: white;
-    padding: 15px 32px;
+    padding: 15px 32px; /*było 15 32*/ 
     text-align: center;
     text-decoration: none;
     outline: none;
@@ -22,6 +22,14 @@ body {
     border: 5px double midnightblue; 
     padding: 15px; 
     background: royalblue;  
+    border-radius: 15px 15px 15px 15px;
+    display: inline-block; /*będzie się rozszerzał na dzieci swe*/
+}
+
+.containerSpec {
+    border: 5px double midnightblue; 
+    padding: 15px; 
+    background: steelblue;  /*albo cadetblue*/
     border-radius: 15px 15px 15px 15px;
     display: inline-block; /*będzie się rozszerzał na dzieci swe*/
 }

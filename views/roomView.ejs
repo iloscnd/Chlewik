@@ -35,7 +35,7 @@
                         
                         newBt.innerHTML = req.responseText;
                         newBt.setAttribute("style", "display:none"); //tak napisane wszystko rozumie
-                        newForm.setAttribute("style", "float:left");// ; width:100%; height:100%";
+                        newForm.setAttribute("style", "");// ; width:100%; height:100%";
                     }
                 }
                 req.send(); //oczywiście przed końcem funkcji przycisku
@@ -117,12 +117,41 @@
     
 
     <body>
-        <% if (ses.guest==0) { %> 
-            Zalogowano jako <%= ses.name %>
-        <% } else { %>
-            Wszedłeś jako gość <%= ses.name %>
-        <% } %>
-        <div class="container" >
+    <center style="margin:0 auto"> 
+    
+        
+        <div class="containerSpec" style="width:400px">
+            <% if (ses.guest==0) { %> 
+                Zalogowano jako <b class="user"><%= ses.name %></b>
+            <% } else { %>
+                Wszedłeś jako gość <b class="guest"><%= ses.name %></b>
+            <% } %>
+            <br>
+            <br>
+            <form id='out' method="POST" action="/rooms/logout"> <!-- action="rooms/logout"-->
+                <button class="button" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
+            </form>
+        
+            <br>
+            
+            <% if (ses.guest==0) { %> 
+            
+                <form id='clear' method="POST" action="/user/settings"> <!--  -->
+                    <button class="button" name='logout'>Ustawienia konta</button> 
+                </form>
+                
+            
+            <% } %>
+       </div> 
+    
+        
+<!-- jak wycentrować... -->
+    
+        
+        
+        <br>
+        <br>
+        <div class="containerSpec" style="width:400px">
             <button id='newRoomBt' class="button" >utwórz pokój</button> <!-- bez określenia class, albo z submit submituje formularz - w form action do jakiej strony -->
             <form id ='newRoomForm' method="POST"  action="/rooms/create"  style="display:none"> <!--  -->
                             Nazwa pokoju <br> <input type='text' id="name" name='roomName' style="float:left ; width:100%"><br> <br>
@@ -133,12 +162,15 @@
                             <!-- ew. przycisk anuluj -->
             </form>
         </div>
+        <br>
+        <br>
         <% roomz.forEach( (value, key, map) => { %>   <!-- czemu domyślny iterator je zwraca w tak głupiej kolejności... -->
-            <div class="container">
+            <div class="container" style="width:400px">
                 <%= value.name %><br> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
                 <form id="go_<%= value.name %>" method="POST" action="/rooms/setSessionPwd/?name=<%= value.name %>" > <!--  -->
                     <% if (value.hasPwd) { %>
-                        Hasło: <input type='text' id="roomPwd_<%= value.name %>" name='roomPwd' style="float:left ; width:100%">
+                        Hasło: <input type='text' id="roomPwd_<%= value.name %>" name='roomPwd' style="width:100%">
+                        <br>
                         <p id="roomErr_<%= value.name %>"> </p>
                         
                     <% } %>
@@ -148,21 +180,15 @@
                     <button class="button" style="float:right" name='logout'>Wnijdź do pokoju</button> 
                 </form>
             </div>
+            <br>
+            <br>
         <% }); %>
 
 <!-- TODO dodać przycisk odświeżenia, który zmodyfikuje kawałek html z tym forem, żeby ajax i nowe pokoje i w ogóle -->
 
-        <form id='out' method="POST" action="/rooms/logout"> <!-- action="rooms/logout"-->
-            <button class="button" style="float:right" name='logout'>Wyloguj</button> <!-- docelowo user/logout i guest/logout i user/remove na inny button -->
-        </form>
-
-        <% if (ses.guest==0) { %> 
-            <form id='clear' method="POST" action="/user/settings"> <!--  -->
-                <button class="button" style="float:right" name='logout'>Ustawienia konta</button> 
-            </form>
-<!-- TODO !!! DOCELOWO TU USTAWIENIA KONTA - ZMIANA HASŁA I USUŃ I DO OBU WYMAGANE HASŁO -->
-        <% } %>
-
+        
+    </center>
+    
     </body>
 
 </html>

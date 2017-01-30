@@ -12,7 +12,9 @@
     <div id="chatBox" style="float: right; position: relative;   width: 250px; height: 300px">
     
       <ul id="chat" style="overflow: auto; height:250px; list-style-type: none;" >
-      
+        <% for(i = 0; i < 10; i++) {%>
+          <%- chat[(i+chatLast)%10] %>
+        <%}%>  
       </ul>
       
       <form style="position: absolute; height: 0px; bottom: 0; ">

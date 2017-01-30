@@ -66,14 +66,14 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
         var p1vis = "hidden";
         var p2vis = "visible";
-        if(game.turn[0]=1){
+        if(game.turn[0]=0){
             p2vis = "hidden";
             p1vis = "visible";  
         }
 
 
 
-        res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis});
+        res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis, chat: room.chat, chatLast: room.chatLast[0]});
         return; //a może by res.end()?
     });
 
@@ -149,14 +149,15 @@ var returnRouter = function(roomz,userz, guestz,io) {
        //var roomName = socket.handshake.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
 
        //tu zdefiniowane, żeby dało się w gotInGame zainicjować i je tu widział
-       var room //;= roomz.get(rnm); //to też niżej w połączeniu, chociaż bez różnicy chyba
+       var room; // = roomz.get(rnm); //to też niżej w połączeniu, chociaż bez różnicy chyba
        var game;// = room.game;
        var state;// = game.state;
        var player;// = game.player;
        var turn;// = game.turn;
        var srcs;// = game.srcs;
        var end;// = game.end;
-
+       var chat;// = room.chat;
+       var chatLast;// = room.chatLast;
        /*
         if(!player[0])
             player[0] = socket.handshake.session.name;
@@ -208,6 +209,8 @@ var returnRouter = function(roomz,userz, guestz,io) {
             turn = game.turn;
             srcs = game.srcs;
             end = game.end;
+            chat = room.chat;
+            chatLast = room.chatLast
             //console.log(ses);
             //var name = ses.roomname;
             //var session = ses.session;
@@ -245,10 +248,6 @@ var returnRouter = function(roomz,userz, guestz,io) {
             
             socket.emit('user_connected', {name:player[0], id:"p1" })
             socket.emit('user_connected', {name:player[1], id:"p2" })
-
-
-            //bedzie dopisywać do czatu   
-            io.to(rnm+"_game").emit('chat message', "<li> user "+ unm + "connected </li>");
 
 
             //io.to(roomname+"_game").emit('sbd entered',room.connectedPeople);
@@ -386,6 +385,8 @@ var returnRouter = function(roomz,userz, guestz,io) {
                 var nameStyle = "user";
                 if(socket.handshake.session.guest)
                     nameStyle = "guest"
+                chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>";
+                chatLast[0] = (chatLast[0]+1)%10;
                 io.to(rnm+"_game").emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>");
             }
         });

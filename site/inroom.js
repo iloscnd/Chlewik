@@ -58,6 +58,9 @@ var routerFun = function(roomz,userz, guestz,io){
             var room = roomz.get(rnm); 
             if (room == undefined) { console.log("OJEJ");  return;}
             var roomname = room.name;
+            var chat = room.chat;
+
+
             socket.join(roomname);
             room.connectedPeople++;
             //room.unready.set(unm, true);
@@ -178,7 +181,29 @@ var routerFun = function(roomz,userz, guestz,io){
         socket.on('sbd entered', function(room) { //to chyba nic nie robi
             socket.emit('sbd entered', room);
         });
+
+        socket.on('chat message room', function(msg){ // z tym samym łapie nie to co chce
+            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
+            var unm = socket.handshake.session.name;
+            if (rnm == undefined || unm == undefined) { console.log("ŁOJENY"); return; }
+            var room = roomz.get(rnm);
+            if (room == undefined) { console.log("ŁOJENY"); return; }
+
+            var chat = room.chat;
+            var chatLast = room.chatLast;
+
+            console.log(msg);
+
+            var nameStyle = "user";
+            if(socket.handshake.session.guest)
+                nameStyle = "guest"
+            chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>";
+            chatLast[0] = (chatLast[0]+1)%10;
+            io.to(rnm).emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>");
         
+        });
+
     });
     
  /*dzieją się dziwne błędy z sesjami jak próbuję w chrome albo ogólnie w 2. przeglądarce*/
@@ -208,10 +233,12 @@ console.log(JSON.stringify(req.session.urlLegit));
         if (r.people == 2) { console.log("PEŁEN"); res.redirect('/rooms?err=crowded'); return; } //TYLKO DLA DWUOSOBOWYCH
         //to psuło, bo było że 2 ludzi a mógł wejść; jak ustawi roomEntered, to wolno, jak nie, to się odbije od middleware. proste
         */
-        
+        console.log(r);
         var model = {
             room : r,
-            ses : req.session
+            ses : req.session,
+            chat : r.chat,
+            chatLast : r.chatLast[0] 
         }
         console.log("!!!"+r.name);
         res.render('inroom.ejs', model);
@@ -254,12 +281,15 @@ console.log(JSON.stringify(req.session.urlLegit));
                 //gametype
                 state : [0,0,0,0,0,0,0,0,0],
                 player : [undefined, undefined],
-                turn : [0],   
+                turn : [0],
                 srcs : ["tictac/empty.png","tictac/tic.png","tictac/tac.png"],
                 end : [0],
                 playersIn : new Map()
             };
         };
+
+        
+
         var game = room.game;
         if(!game.player[0])
             game.player[0] = unm;

@@ -119,6 +119,17 @@ var routerFun = function(userz) {
         return; //a może by res.end()?
     });
 
+    router.post('/ajaxPwd', (req,res) => {
+        var name = req.session.name; //z POST są w body a nie query
+        var pwd = req.body.pwd;
+        var getPwd ;
+        var resp = "";
+        if (userz.get(name) != undefined) getPwd = userz.get(name).pwd;
+        if (getPwd!= undefined && getPwd == pwd) resp = "OK"; else resp = "BAD";
+        res.send(resp);
+        return; //a może by res.end()?
+    });
+
     //trzeba userz, więc w routerFun - dopeiro odtąd i tak mają być potrzebne uprawnienia, a nie wcześniej
     // !!! tu już te do których trzeba być zalogowanym
     router.use('/', (req,res,next) => {
@@ -137,6 +148,47 @@ var routerFun = function(userz) {
         }
         req.session.urlLegit.entered = ses.legit.entered; //1, ale tak bezpiecznie
         next();
+    });
+
+    router.all('/settings', (req,res) => { //przeszedł przez middleware, czyli uprawnienia są
+        console.log("99"+JSON.stringify(req.session.legit));
+    console.log(JSON.stringify(req.session.urlLegit));
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        var text = req.query.info;
+        if (text == 'pwd') text = "zmieniono hasło";
+        var model =  {
+            info : text
+        }
+        res.render('settings.ejs', model); //chyba nie tzreba modelu
+    });
+
+    router.post('/change', (req,res) =>{
+        //TODO check if not colliding data, pwd==pwd2 etc
+    console.log("50"+JSON.stringify(req.session.legit));
+    console.log(JSON.stringify(req.session.urlLegit));   
+/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        /*if(req.session.legit.entered)
+        {
+            res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
+            return; 
+        }*/
+
+        var flag = true;
+        var name = req.session.name;
+        console.log("zakładam\n");
+        if (userz.get(name) == undefined) flag = false;
+        if (flag) {
+            var user = userz.get(name);
+            user.pwd=req.body.newPwd;
+            console.log("|||/////////////////////////////////zmieniam");
+            //req.session.legit.entered = 1; //te już są ustawione
+            //req.session.name = req.body.name;
+            //req.session.guest = 0;
+            res.redirect('/user/settings?info=pwd');
+            return; //a może by res.end()?
+        }
+        else { res.redirect('/redirectDefault');return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+        
     });
 
     router.all("/logout",(req,res)=>{

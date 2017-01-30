@@ -193,6 +193,8 @@ console.log(JSON.stringify(req.session.urlLegit));
                 hasPwd : flag,
                 people : 0, 
                 connectedPeople : 0, //socket ogarnia liczby
+                chat : [null,null,null,null,null,null,null,null,null,null],
+                chatLast : [0],
                 unready : new Map(),
                 ready : new Map(),
                 guru : req.session.name //taki co mu ma być wolno usuwać innych - ten, co utworzył

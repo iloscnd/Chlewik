@@ -73,7 +73,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
 
 
-        res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis, chat: game.chat, chatLast: game.chatLast[0]});
+        res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis, chat: room.chat, chatLast: room.chatLast[0]});
         return; //a może by res.end()?
     });
 
@@ -156,8 +156,8 @@ var returnRouter = function(roomz,userz, guestz,io) {
        var turn;// = game.turn;
        var srcs;// = game.srcs;
        var end;// = game.end;
-       var chat;// = game.chat;
-       var chatLast;// = game.chatLast;
+       var chat;// = room.chat;
+       var chatLast;// = room.chatLast;
        /*
         if(!player[0])
             player[0] = socket.handshake.session.name;
@@ -209,8 +209,8 @@ var returnRouter = function(roomz,userz, guestz,io) {
             turn = game.turn;
             srcs = game.srcs;
             end = game.end;
-            chat = game.chat;
-            chatLast = game.chatLast
+            chat = room.chat;
+            chatLast = room.chatLast
             //console.log(ses);
             //var name = ses.roomname;
             //var session = ses.session;
@@ -248,9 +248,6 @@ var returnRouter = function(roomz,userz, guestz,io) {
             
             socket.emit('user_connected', {name:player[0], id:"p1" })
             socket.emit('user_connected', {name:player[1], id:"p2" })
-
-
-            //bedzie dopisywać do czatu   
 
 
             //io.to(roomname+"_game").emit('sbd entered',room.connectedPeople);

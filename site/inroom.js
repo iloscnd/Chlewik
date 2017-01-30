@@ -254,7 +254,9 @@ console.log(JSON.stringify(req.session.urlLegit));
                 //gametype
                 state : [0,0,0,0,0,0,0,0,0],
                 player : [undefined, undefined],
-                turn : [0],   
+                turn : [0],
+                chat : [null, null, null, null, null, null, null, null, null, null],
+                chatLast : [0],
                 srcs : ["tictac/empty.png","tictac/tic.png","tictac/tac.png"],
                 end : [0],
                 playersIn : new Map()

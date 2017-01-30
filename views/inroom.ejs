@@ -8,7 +8,8 @@
 
         <script src="/socket.io/socket.io.js"></script>
         <script src="/appjs.js"></script> <!--to generuje żądanie  do serwera takie normalne, bo czemu nie...- i moje przekierowanie go przekierowuje, ale jakoś działa  -->
-        
+        <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+
         <script>
             
             window.addEventListener('load', function(){
@@ -21,6 +22,17 @@
                     roomname : room.name
                 };*/
                 socket.emit('getInRoom'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
+
+                $('#chatForm').submit(function(){
+                    socket.emit('chat message room', $('#chatMsg').val());
+                    $('#chatMsg').val('');
+                    return false;
+                });
+            
+                socket.on('chat message', function(msg){
+                    $('#chat').append(msg);
+                    $('#chat').scrollTop($('#chat').prop("scrollHeight"));
+                });
 
                 socket.on('sbd entered', function(howManyAre) { //dbam wcześniej żeby nie undef
                     var p = document.getElementById('pisz');
@@ -43,6 +55,13 @@
 
                     window.location = "/rooms/room/createGame";
                 });
+
+
+                
+
+                socket.on('user_connected', function(msg){
+                    $("#"+msg.id).text(msg.name);
+                })
                 
             });
 
@@ -64,6 +83,23 @@
         </form>
     </center>
 
+    <div id="chatBox" style="float: right; position: relative;   width: 250px; height: 300px">
+    
+      <ul id="chat" style="overflow: auto; height:250px; list-style-type: none;" >
+        <% for(i = 0; i < 10; i++) {%>
+          <%- chat[(i+chatLast)%10] %>
+        <%}%>  
+      </ul>
+      
+      <form id="chatForm" style="position: absolute; height: 0px; bottom: 0; " method="">
+        <input id="chatMsg" autocomplete="off" /><button>Send</button>
+      </form>
+    
+    </div> 
+
     </body>
+
+    
+
 </html>
 

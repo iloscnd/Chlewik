@@ -8,13 +8,6 @@ router.use( express.static('./static'));
 
 var returnRouter = function(roomz,userz, guestz,io) {
 
-    /*
-    var state = [0,0,0,0,0,0,0,0,0];
-    var player = [undefined, undefined];
-    var turn = 0;   
-    var srcs = ["tictac/empty.png","tictac/tic.png","tictac/tac.png"]
-    var end = 0;
-    */ // moved to /inroom/createRoom
     
     //trzeba roomz, więc w routerFun
     //sprawdzenie poziomu uprawnień - 
@@ -75,8 +68,17 @@ var returnRouter = function(roomz,userz, guestz,io) {
         var game = room.game;
         if (game == undefined) {res.redirect('/redirectDefault'); return; }
 
-            res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session});
-            return; //a może by res.end()?
+        var p1vis = "hidden";
+        var p2vis = "visible";
+        if(game.turn[0] == 0){
+            p2vis = "hidden";
+            p1vis = "visible";  
+        }
+
+
+
+        res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis, chat: room.chat, chatLast: room.chatLast[0]});
+        return; //a może by res.end()?
     });
 
     router.all('/leave', (req,res) => {
@@ -151,14 +153,15 @@ var returnRouter = function(roomz,userz, guestz,io) {
        //var roomName = socket.handshake.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
 
        //tu zdefiniowane, żeby dało się w gotInGame zainicjować i je tu widział
-       var room //;= roomz.get(rnm); //to też niżej w połączeniu, chociaż bez różnicy chyba
+       var room; // = roomz.get(rnm); //to też niżej w połączeniu, chociaż bez różnicy chyba
        var game;// = room.game;
        var state;// = game.state;
        var player;// = game.player;
        var turn;// = game.turn;
        var srcs;// = game.srcs;
        var end;// = game.end;
-
+       var chat;// = room.chat;
+       var chatLast;// = room.chatLast;
        /*
         if(!player[0])
             player[0] = socket.handshake.session.name;
@@ -166,10 +169,6 @@ var returnRouter = function(roomz,userz, guestz,io) {
             if(!player[1] && player[0] != socket.handshake.session.name)
                 player[1] = socket.handshake.session.name;
                 */
-
-        
-       
-
         /*
             if(!player[0])
                 player[0] = socket.handshake.session.name;
@@ -214,6 +213,8 @@ var returnRouter = function(roomz,userz, guestz,io) {
             turn = game.turn;
             srcs = game.srcs;
             end = game.end;
+            chat = room.chat;
+            chatLast = room.chatLast
             //console.log(ses);
             //var name = ses.roomname;
             //var session = ses.session;
@@ -237,24 +238,20 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
             //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
             if (socket.handshake.session.guest) {
-                        var guest = guestz.get(socket.handshake.session.name);
-                        if (guest == undefined ) return;
-                        if (!guest.connected) guest.connected = 1;
-                        delete guest.lastConnected;
-                    }
-                    else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                        var user = userz.get(socket.handshake.session.name);
-                        if (user == undefined ) return;
-                        if (!user.connected) user.connected = 1;
-                        delete user.lastConnected;
-                    }
+                    var guest = guestz.get(socket.handshake.session.name);
+                    if (guest == undefined ) return;
+                    if (!guest.connected) guest.connected = 1;
+                    delete guest.lastConnected;
+            }
+            else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                    var user = userz.get(socket.handshake.session.name);
+                    if (user == undefined ) return;
+                    if (!user.connected) user.connected = 1;
+                    delete user.lastConnected;
+            }
             
             socket.emit('user_connected', {name:player[0], id:"p1" })
             socket.emit('user_connected', {name:player[1], id:"p2" })
-
-
-            //bedzie dopisywać do czatu   
-            io.to(rnm+"_game").emit('chay message', "<li> user "+ unm + "connected </li>");
 
 
             //io.to(roomname+"_game").emit('sbd entered',room.connectedPeople);
@@ -340,8 +337,8 @@ var returnRouter = function(roomz,userz, guestz,io) {
                 if(player[turn[0]%2] == socket.handshake.session.name){
                     io.to(rnm+"_game").emit('change',[msg,turn[0]%2]);
                     state[msg] = turn[0]%2 + 1;
-                    turn[0]++;
-
+                    turn[0] = (turn[0]+1)%2;
+                    console.log(state);
                     //check if won
                     won = false;
                     for( i = 0; i<3; i++)
@@ -356,17 +353,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
                         won = true;
                     
                     if(won){
-                        //console.log(state);
-                        /*for(i=0; i<9; i++){
-                            //io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
-                            state[i] = 0; //i tak nie starczy chyba do nowej gry??
-                        }*/
-
-                        //to chyba tworzy nowy obiekt i tamten wskaźnik już nie działa
-                        //state = [0,0,0,0,0,0,0,0,0]; //dla jednej gry
-                        //player = [undefined, undefined];
-
-                        ///delete game; //to NIE DZIAŁA, jest tylko czytanie z sesji
+                        
 
                         delete room.game; // to chyba nawet działa, bo żaden nie ma uprawnień na /leave w grze potem   //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
 
@@ -378,6 +365,20 @@ var returnRouter = function(roomz,userz, guestz,io) {
                         
                         //end[0] = 1;
                     }
+                    else
+                    {
+                        var draw = true;
+                        for( i = 0; i<9; i++){
+                            if(state[i] == 0)
+                                draw = false;
+                        }
+                        if(draw){
+                            console.log("draw");
+                            delete room.game;
+                            end[0] = 1; 
+                            io.to(rnm+"_game").emit('draw', null);
+                        }
+                    }
                 }
             }
 
@@ -388,12 +389,14 @@ var returnRouter = function(roomz,userz, guestz,io) {
                 var nameStyle = "user";
                 if(socket.handshake.session.guest)
                     nameStyle = "guest"
-                io.to(rnm+"_game").emit('chat message', "<ul><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</ul>");
+                chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>";
+                chatLast[0] = (chatLast[0]+1)%10;
+                io.to(rnm+"_game").emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>");
             }
         });
         socket.on('surrender',function(msg){
             
-            delete room.game; // to chyba nawet działa, bo żaden nie ma uprawnień na /leave w grze potem   //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
+            delete room.game; 
             end[0] = 1;
 
             var winner = player[0];
@@ -403,24 +406,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
             io.to(rnm+"_game").emit('won', winner);
         });
         
-        //to pójdzie do kosza
-        socket.on('reset', function(msg){
-            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { 
-                console.log("ŁOJENY"); 
-                return; 
-            }
-            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
-            if (rnm == undefined) { 
-                console.log("ŁOJENY"); 
-                return; 
-            }
-            for(i=0; i<9; i++){
-                io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
-                state[i] = 0; //i tak nie starczy chyba do nowej gry??
-            }
-            end[0] = 0;
-        });
-
+        
         /*
         socket.on('disconnect', function(){ //przeniesione do tego na connect, żeby tylko tym z gry coś robiło
                 console.log('A socket with sessionID ' + socket.client.id + ' disconnected!');

@@ -9,7 +9,19 @@
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     
   <body>
-      <table>
+    <div id="chatBox" style="float: right; position: relative;   width: 250px; height: 300px">
+    
+      <ul id="chat" style="overflow: auto; height:250px" >
+      
+      </ul>
+      
+      <form style="position: absolute; height: 0px; bottom: 0; ">
+        <input id="chatMsg" autocomplete="off" /><button>Send</button>
+      </form>
+    
+    </div> 
+    
+    <table>
       <% for(i = 0; i < 9; i++) {%>
         <% if( i % 3 == 0 && i > 0) {%>
           </tr> <%}%>
@@ -17,9 +29,8 @@
           <tr> <% } %>
       <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
     </table>
-    <button>reset</button>
-    <p id="p1">none</p><br>
-    <p id="p2">none</p><br>
+    <button id="surr" class="button">Poddaj się</button>
+    
     <script>
       var socket = io();
       
@@ -31,9 +42,15 @@
         }
       });
       
-      $('button').click(function(){
-        socket.emit('reset');
+      $('form').submit(function(){
+        socket.emit('chat message', $('#chatMsg').val());
+        $('#chatMsg').val('');
+        return false;
       });
+
+      $('#surr').click(function(){
+        socket.emit('surrender',null )
+      })
 
       socket.on('change', function(msg){
         if(msg[1]==0)
@@ -44,6 +61,11 @@
     
       socket.on('clear', function(msg){
         $("#"+msg).attr("src","tictac/empty.png");
+      });
+
+      socket.on('chat message', function(msg){
+        $('#chat').append(msg);
+        $('#chat').scrollTop($('#chat').prop("scrollHeight"));
       });
 
       socket.on('user_connected', function(msg){

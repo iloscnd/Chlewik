@@ -45,3 +45,11 @@ input[type=text]:focus {
     border: 3px solid #555;
 }
 
+.guest {
+    color: red;
+}
+
+
+.user {
+    color: green;
+}

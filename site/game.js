@@ -215,12 +215,9 @@ var returnRouter = function(roomz,userz, guestz,io) {
             //var session = ses.session;
             
             socket.join(rnm+"_game");
-<<<<<<< HEAD
-    /*        
-=======
-            
 
->>>>>>> 19681a74418d9942140defb07d4bd753b26d7989
+    /*        
+
             socket.handshake.session.gameConnected = 1;
             delete socket.handshake.session.gameDisconnected;
             socket.handshake.session.save();

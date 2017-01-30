@@ -23,7 +23,7 @@
                 };*/
                 socket.emit('getInRoom'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
 
-                $('form').submit(function(){
+                $('#chatForm').submit(function(){
                     socket.emit('chat message room', $('#chatMsg').val());
                     $('#chatMsg').val('');
                     return false;
@@ -91,7 +91,7 @@
         <%}%>  
       </ul>
       
-      <form style="position: absolute; height: 0px; bottom: 0; " method="">
+      <form id="chatForm" style="position: absolute; height: 0px; bottom: 0; " method="">
         <input id="chatMsg" autocomplete="off" /><button>Send</button>
       </form>
     

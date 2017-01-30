@@ -182,7 +182,7 @@ var routerFun = function(roomz,userz, guestz,io){
             socket.emit('sbd entered', room);
         });
 
-        socket.on('chat message room', function(msg){
+        socket.on('chat message room', function(msg){ // z tym samym łapie nie to co chce
             if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
             var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
             var unm = socket.handshake.session.name;

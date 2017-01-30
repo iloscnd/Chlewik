@@ -215,12 +215,13 @@ var returnRouter = function(roomz,userz, guestz,io) {
             //var session = ses.session;
             
             socket.join(rnm+"_game");
-            
+
+    /*        
 
             socket.handshake.session.gameConnected = 1;
             delete socket.handshake.session.gameDisconnected;
             socket.handshake.session.save();
-
+*/
             if (!game.playersConnected) game.playersConnected = 0;
             game.playersConnected ++ ;
             delete game.lastConnected;
@@ -259,10 +260,11 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
                 var date = new Date(); //bierze aktualną
                 // /var tm = date.getTime(); //jednak nie wziąłem tego
+/*                
                 delete socket.handshake.session.gameConnected;
                 socket.handshake.session.gameDisconnected = date;
                 socket.handshake.session.save();
-
+*/
                 if (!game.playersConnected) game.lastConnected = date;
                 else {
                     game.playersConnected -- ;
@@ -281,7 +283,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
                         delete room.playersConnected;
                     }
                 }
-
+                
                 //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
                 //jak dodaje na wejściu, to musi usunąć na wyjściu
                 if (socket.handshake.session.guest) {
@@ -296,7 +298,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
                             user.lastConnected = date;
                             delete user.connected;
                         }
-
+                        
                 //delete socket.handshake.session.legit.roomEntered; //NIE!!! ma nie usuwać z pokoju w ten sposób
                 //socket.handshake.session.save();
 

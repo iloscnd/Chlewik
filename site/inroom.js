@@ -69,11 +69,15 @@ var routerFun = function(roomz,userz, guestz,io){
             //console.log(name);
             //console.log(room);
 
+/* //nie wiem czemu te psuły
+            console.log("-------------------"+JSON.stringify(socket.handshake.session));
 
             socket.handshake.session.roomConnected = 1;
             delete socket.handshake.session.roomDisconnected;
             socket.handshake.session.save();
 
+            console.log("-------------------"+JSON.stringify(socket.handshake.session));
+*/
             if (!room.playersConnected) room.playersConnected = 0;
             room.playersConnected ++ ;
             delete room.lastConnected;
@@ -114,10 +118,14 @@ var routerFun = function(roomz,userz, guestz,io){
                     //console.log("JUŻ USUWAM");
 
                 var date = new Date(); //bierze aktualną
+/*
+                console.log("====================="+JSON.stringify(socket.handshake.session));
                 // /var tm = date.getTime(); //jednak nie wziąłem tego
                 delete socket.handshake.session.roomConnected;
                 socket.handshake.session.roomDisconnected = date;
-                
+                socket.handshake.session.save();
+                console.log("====================="+JSON.stringify(socket.handshake.session));
+*/
                 var date = new Date(); //bierze aktualną
                 // /var tm = date.getTime(); //jednak nie wziąłem tego
 
@@ -130,6 +138,7 @@ var routerFun = function(roomz,userz, guestz,io){
                     }
                 }
 
+                
                 //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
                 //jak dodaje na wejściu, to musi usunąć na wyjściu
                 if (socket.handshake.session.guest) {
@@ -144,7 +153,7 @@ var routerFun = function(roomz,userz, guestz,io){
                             user.lastConnected = date;
                             delete user.connected;
                         }
-
+                        
                 //delete socket.handshake.session.legit.roomEntered; //NIE!!! ma nie usuwać z gry w ten sposób
                 //socket.handshake.session.save();
 

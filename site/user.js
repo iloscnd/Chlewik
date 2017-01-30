@@ -123,8 +123,11 @@ var routerFun = function(userz) {
     // !!! tu już te do których trzeba być zalogowanym
     router.use('/', (req,res,next) => {
 
+        console.log("W4"+JSON.stringify(req.session.legit));
+
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło - usuwamy tylko entered, bo resztę się i tak ustawi przy ponownym
-        if( req.session.legit.entered && userz.get(req.session.name) == undefined) delete req.session.legit.entered; //B. WAŻNE!!! 
+        //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
+        if( req.session.legit.entered && userz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
 
         var ses = req.session;
         if (!ses.legit.entered) { 

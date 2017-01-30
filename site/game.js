@@ -6,7 +6,7 @@ router.use( express.static('./static'));
 
 
 
-var returnRouter = function(roomz,io) {
+var returnRouter = function(roomz,userz, guestz,io) {
 
     /*
     var state = [0,0,0,0,0,0,0,0,0];
@@ -24,10 +24,13 @@ var returnRouter = function(roomz,io) {
     /// !! tu jest problem, bo trzeba w funkcji też sprawdzać czy nazwa pokojogry się zgadza - ew. nazwę czytać z sesji i tyle
     router.use('/', (req,res,next) => {
 
+        console.log("W5"+JSON.stringify(req.session.legit));
+
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
-        if( req.session.legit.roomEntered == undefined) delete req.session.legit.inGame; //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
-        else if( roomz.get(req.session.legit.roomEntered) == undefined) delete req.session.legit.inGame; //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
-        else if( (roomz.get(req.session.legit.roomEntered)).game == undefined) delete req.session.legit.inGame; //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
+        //jak nie dam save sesji, to nie zmoodyfikuje, jest nierozumny
+        if( req.session.legit.roomEntered == undefined) { console.log("usuwam że w grze"); delete req.session.legit.inGame; req.session.save(); }  //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
+        else if( roomz.get(req.session.legit.roomEntered) == undefined) { console.log("usuwam że w grze"); delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
+        else if( (roomz.get(req.session.legit.roomEntered)).game == undefined) { console.log("usuwam że w grze"); delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
 
         var ses = req.session;
         if (!ses.legit.inGame) { 
@@ -115,8 +118,9 @@ console.log(JSON.stringify(req.session.urlLegit));
        //var unm = socket.handshake.session.name;
        if (rnm == undefined) { console.log("ŁOJENY"); return; }
        //var roomName = socket.handshake.session.legit.roomEntered; //to zadziała, bo zczyta wskaźniki i one będą takie same i pod nimi zmieni
-       var room = roomz.get(rnm);
-       
+
+       //tu zdefiniowane, żeby dało się w gotInGame zainicjować i je tu widział
+       var room //;= roomz.get(rnm); //to też niżej w połączeniu, chociaż bez różnicy chyba
        var game;// = room.game;
        var state;// = game.state;
        var player;// = game.player;
@@ -141,7 +145,14 @@ console.log(JSON.stringify(req.session.urlLegit));
             //to MUSZĄ byś obiekty te wszystkie pola, żeby je mógł zmieniać
             //tzn tylko wtedy przekaże referencję, a nie wartość
             //więc zrobiłem tablice 1 - elementowe
+
+            room = roomz.get(rnm);
+            if(room == undefined) return; //to się nie zdarzy
+
             game = room.game;
+
+            if(game == undefined) return; //to się nie zdarzy
+
             state = game.state;
             player = game.player;
             turn = game.turn;
@@ -153,12 +164,89 @@ console.log(JSON.stringify(req.session.urlLegit));
             
             socket.join(rnm+"_game");
             
+            socket.handshake.session.gameConnected = 1;
+            delete socket.handshake.session.gameDisconnected;
+            socket.handshake.session.save();
+
+            if (!game.playersConnected) game.playersConnected = 0;
+            game.playersConnected ++ ;
+            delete game.lastConnected;
+
+            //to też musi dodawać do pokoju, żeby pokoju nie usunęło jak długo grają, bo się z niego rozłączają
+            if (!room.playersConnected) room.playersConnected = 0;
+            room.playersConnected ++ ;
+            delete room.lastConnected;
+
+            //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
+            if (socket.handshake.session.guest) {
+                        var guest = guestz.get(socket.handshake.session.name);
+                        if (guest == undefined ) return;
+                        if (!guest.connected) guest.connected = 1;
+                        delete guest.lastConnected;
+                    }
+                    else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                        var user = userz.get(socket.handshake.session.name);
+                        if (user == undefined ) return;
+                        if (!user.connected) user.connected = 1;
+                        delete user.lastConnected;
+                    }
             
             socket.emit('user_connected', {name:player[0], id:"p1" })
             socket.emit('user_connected', {name:player[1], id:"p2" })
 
 
             //io.to(roomname+"_game").emit('sbd entered',room.connectedPeople);
+
+            socket.on('disconnect', function(){ //przeniesione do tego na connect, żeby tylko tym z gry coś robiło
+                console.log('A socket with sessionID ' + socket.client.id + ' disconnected!');
+
+                var date = new Date(); //bierze aktualną
+                // /var tm = date.getTime(); //jednak nie wziąłem tego
+                delete socket.handshake.session.gameConnected;
+                socket.handshake.session.gameDisconnected = date;
+                socket.handshake.session.save();
+
+                if (!game.playersConnected) game.lastConnected = date;
+                else {
+                    game.playersConnected -- ;
+                    if (game.playersConnected == 0) {
+                        game.lastConnected = date;
+                        delete game.playersConnected;
+                    }
+                }
+
+                //tu też musi zmniejszyć, jak przy połączeniu zwiększa
+                if (!room.playersConnected) room.lastConnected = date;
+                else {
+                    room.playersConnected -- ;
+                    if (room.playersConnected == 0) {
+                        room.lastConnected = date;
+                        delete room.playersConnected;
+                    }
+                }
+
+                //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
+                //jak dodaje na wejściu, to musi usunąć na wyjściu
+                if (socket.handshake.session.guest) {
+                            var guest = guestz.get(socket.handshake.session.name);
+                            if (guest == undefined ) return;
+                            guest.lastConnected = date;
+                            delete guest.connected;
+                        }
+                        else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                            var user = userz.get(socket.handshake.session.name);
+                            if (user == undefined ) return;
+                            user.lastConnected = date;
+                            delete user.connected;
+                        }
+
+                //delete socket.handshake.session.legit.roomEntered; //NIE!!! ma nie usuwać z pokoju w ten sposób
+                //socket.handshake.session.save();
+
+
+                //delete socket.handshake.session.legit.inGame; //to tak nie działa
+                //check if disconnected user was a player(and is not having any kind of )
+            });
 
         });
 
@@ -233,12 +321,12 @@ console.log(JSON.stringify(req.session.urlLegit));
             end[0] = 0;
         });
 
-
-        socket.on('disconnect', function(){
+        /*
+        socket.on('disconnect', function(){ //przeniesione do tego na connect, żeby tylko tym z gry coś robiło
                 console.log('A socket with sessionID ' + socket.client.id + ' disconnected!');
                 //delete socket.handshake.session.legit.inGame; //to tak nie działa
                 //check if disconnected user was a player(and is not having any kind of )
-        });
+        }); */
        // console.log(socket.handshake.session.name);
     });
 

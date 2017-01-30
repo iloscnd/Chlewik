@@ -4,7 +4,6 @@ var express = require('express');
  var router = express.Router();
  router.use( express.static('./static')); //muszę
 
-var roomz = new Map(); //czy wyżej zadziała
 
 //sprawdzenie poziomu uprawnień - 
 //starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
@@ -21,14 +20,77 @@ var roomz = new Map(); //czy wyżej zadziała
     next();
 });*/
 
-var routerFun = function(io,userz,guestz) { //potrzebuję do sprawdzenia aktualności uprawnień
+var routerFun = function(roomz,userz, guestz,io) { //potrzebuję do sprawdzenia aktualności uprawnień
+
+            io.on('connection', function(socket) {
+                console.log('connected in room');
+                socket.on('loggedIn', function() { //rn to na razie nazwa pokoju
+                    
+                    console.log("connected");
+
+                    socket.handshake.session.loginConnected = 1;
+                    delete socket.handshake.session.loginDisconnected;
+                    socket.handshake.session.save();
+
+                    if (socket.handshake.session.guest) {
+                        var guest = guestz.get(socket.handshake.session.name);
+                        if (guest == undefined ) return;
+                        if (!guest.connected) guest.connected = 1;
+                        //jakby wysyłał za plecami dziwne żądania to one nie wejdą tak głęboko, bo nie są do tego routera, więc nie trzeba pamiętać liczby
+                        delete guest.lastConnected;
+                    }
+                    else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                        var user = userz.get(socket.handshake.session.name);
+                        if (user == undefined ) return;
+                        if (!user.connected) user.connected = 0;
+                        delete user.lastConnected;
+                    }
+
+                    socket.on('disconnect', function() { // UWAGA: TYLKO SOCKETOM ZALOGOWANYM - jak ktoś np. w grze, to będzie tu rozłączony, ale głębiej połączony
+                        
+                        console.log("disconnected");
+
+                        var date = new Date(); //bierze aktualną
+                        // /var tm = date.getTime(); //jednak nie wziąłem tego
+                        delete socket.handshake.session.loginConnected;
+                        socket.handshake.session.loginDisconnected = date;
+                        socket.handshake.session.save();
+                        /*
+                        if (!room.playersConnected) room.lastConnected = date;
+                        else {
+                            room.playersConnected -- ;
+                            if (room.playersConnected == 0) {
+                                room.lastConnected = date;
+                                delete room.playersConnected;
+                            }
+                        }*/ 
+                        
+                        if (socket.handshake.session.guest) {
+                            var guest = guestz.get(socket.handshake.session.name);
+                            if (guest == undefined ) return;
+                            guest.lastConnected = date;
+                            console.log("disconnected guest" + guest.name);
+                            delete guest.connected;
+                        }
+                        else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                            var user = userz.get(socket.handshake.session.name);
+                            if (user == undefined ) return;
+                            user.lastConnected = date;
+                            delete user.connected;
+                        }
+                    }); 
+                });
+            });
 
     //trzeba userz, guestz, więc w routerFun
     router.use('/', (req,res,next) => {
 
+        console.log("W1"+JSON.stringify(req.session.legit));
+
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło - usuwamy tylko entered, bo resztę się i tak ustawi przy ponownym
-        if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) delete req.session.legit.entered; //B. WAŻNE!!! 
-        if( req.session.guest && guestz.get(req.session.name) == undefined) delete req.session.legit.entered; //B. WAŻNE!!! 
+        //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
+        if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
+        if( req.session.guest && guestz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
 
         var ses = req.session;
         if (!ses.legit.entered) { 
@@ -40,7 +102,7 @@ var routerFun = function(io,userz,guestz) { //potrzebuję do sprawdzenia aktualn
         next();
     });
     
-    var inroomRouter = require('./inroom')(roomz,io);
+    var inroomRouter = require('./inroom')(roomz,userz, guestz,io);
     router.use('/room', inroomRouter);
     
     router.all('/', (req,res) =>{

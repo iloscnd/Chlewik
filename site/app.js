@@ -11,7 +11,7 @@
 var userz = new Map();  //tu, bo chcę sprawdzać też w /rooms czy aktualne uprawnienia
 var guestz = new Map(); 
 var roomz = new Map(); // tu, bo tu jest usuwanie na timeout
-
+var id = 1;
 
 var http = require('http');
 var express = require('express');
@@ -26,7 +26,7 @@ var sesStore = new FileStore({
     }); //FileStore jest var, patrz góra!
 
  var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
-    store: sesStore, //na kompie coś się wtedy strasznie psuje u mnie
+    //store: sesStore, //na kompie coś się wtedy strasznie psuje u mnie
     secret: 'keyboard cat',
     maxAge: 10*60000,
     resave : true, //piszą że jak czas ważności, może on musi nadpisywać ostatnie użycie bo wygaśnie inaczej https://github.com/expressjs/session
@@ -136,16 +136,16 @@ console.log(JSON.stringify(req.session.urlLegit));
 });*/
 
 
-var guestRouter = require('./guest')(guestz);
+var guestRouter = require('./guest')(guestz,id);
 app.use('/guest', guestRouter);
 
 var registerRouter = require('./register');
 app.use('/register', registerRouter);
 
-var roomsRouter = require('./rooms')(roomz,userz, guestz,io);
+var roomsRouter = require('./rooms')(roomz,userz, guestz,io,id);
 app.use('/rooms', roomsRouter);
 
-var userRouter = require('./user')(userz);
+var userRouter = require('./user')(userz,id);
 app.use('/user', userRouter);
 
 //moved to inroom

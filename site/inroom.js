@@ -7,7 +7,7 @@ var express = require('express');
 //var inrooms = new Map();
 
 
-var routerFun = function(roomz,userz, guestz,io){
+var routerFun = function(roomz,userz, guestz,io,id){
 
     //trzeba roomz, więc w routerFun
     //sprawdzenie poziomu uprawnień - 
@@ -22,6 +22,11 @@ var routerFun = function(roomz,userz, guestz,io){
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
         //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
         if(req.session.legit.roomEntered && roomz.get(req.session.legit.roomEntered) == undefined) { console.log("usuwam że w pokoju"); delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie pokój jak ten nie połączony
+        if ( req.session.legit.roomEntered) {
+            var room = roomz.get(req.session.legit.roomEntered);
+            if (room != undefined && room.id != req.session.roomEnteredID) { console.log("usuwam że w pokoju"); delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
+        }
+        //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, też z ID
 
         var ses = req.session; //ew. sprawdzać na null
         console.log(ses.legit.roomEntered+"WRACAM???4");
@@ -276,9 +281,11 @@ console.log(JSON.stringify(req.session.urlLegit));
         var unm = req.session.name;
         var room = roomz.get(roomName); //ew. spr czy nie undefined
         if (room == undefined) {res.redirect('/redirectDefault'); return; }
+        var theID = id;
         if (room.game == undefined) {
             room.game = {
                 //gametype
+                id : theID,
                 state : [0,0,0,0,0,0,0,0,0],
                 player : [undefined, undefined],
                 turn : [0],
@@ -286,9 +293,9 @@ console.log(JSON.stringify(req.session.urlLegit));
                 end : [0],
                 playersIn : new Map()
             };
-        };
 
-        
+            ++id;
+        } else theID = room.game.id;
 
         var game = room.game;
         if(!game.player[0])
@@ -300,6 +307,7 @@ console.log(JSON.stringify(req.session.urlLegit));
         game.end = 0;
 
         req.session.legit.inGame = 1;
+        req.session.gameID = theID;
 
         //gotowość do gry trzeba usuwać z pokoju już przy wchodzeniu, bo przy wychodzeniu z gry pierwszy co wyjdzie usuwa grę
         //a wtedy innym się anulują uprawnienia do robienia z nią czegoś i  przy okazji automatycznie im się usuwa bycie w niej

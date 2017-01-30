@@ -28,11 +28,15 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
 
-        //jak nie dam save sesji, to nie zmoodyfikuje, jest nierozumny
+        //jak nie dam save sesji, to nie zmoodyfikuje
         if( req.session.legit.roomEntered == undefined) { console.log("usuwam że w grze"); delete req.session.legit.inGame; req.session.save(); }  //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
         else if( roomz.get(req.session.legit.roomEntered) == undefined) { console.log("usuwam że w grze"); delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
         else if( (roomz.get(req.session.legit.roomEntered)).game == undefined) { console.log("usuwam że w grze"); delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
-
+        //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, W GRZE TEŻ TRZEBA ID - bo ktoś mógłby wejść jak się skończyła tamta
+        else  {
+            var game = (roomz.get(req.session.legit.roomEntered)).game;
+            if (game != undefined && game.id != req.session.gameID) { console.log("usuwam że w grze"); delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
+        }
 
         var ses = req.session;
 

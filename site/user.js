@@ -8,7 +8,7 @@ var express = require('express');
 //sprawdzenie poziomu uprawnień - tu są 2 poziomy tak samo jak w guest
 // na początku bez uprawnień tak jak tam
 
-var routerFun = function(userz) {
+var routerFun = function(userz,id) {
 
     router.all('/', (req,res) =>{
         //to nie jest potrzebne
@@ -37,7 +37,10 @@ var routerFun = function(userz) {
 
         if (flag) {
             req.session.legit.entered = 1;
-            req.session.name = req.body.name;
+            req.session.name = name;
+
+            req.session.personID = userz.get(name).id;
+
             req.session.guest = 0;
             res.redirect("/rooms");
             return; //a może by res.end()?
@@ -62,9 +65,15 @@ var routerFun = function(userz) {
         console.log("zakładam\n");
         if (userz.get(name) != undefined) flag = false;
         if (flag) {
+            var theID = id;
+            ++id;
             var newUser = {
+                id : theID,
+                name : name, //powielam, ale niech będzie
                 pwd : req.body.pwd
             };
+            req.session.personID = theID;
+            
             userz.set(name,newUser);
             req.session.legit.entered = 1;
             req.session.name = req.body.name;
@@ -138,10 +147,16 @@ var routerFun = function(userz) {
 
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło - usuwamy tylko entered, bo resztę się i tak ustawi przy ponownym
         //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
-        if( req.session.legit.entered && userz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
+        if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
+        if ( req.session.legit.entered && !req.session.guest) {
+            var user = userz.get(req.session.name);
+            if (user != undefined && user.id != req.session.personID) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
+        }
+        //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, też z ID
+        
 
         var ses = req.session;
-        if (!ses.legit.entered) { 
+        if (!ses.legit.entered || ses.guest) { 
             console.log(ses.legit.entered+"WRACAM2");
             res.redirect('/'); 
             return; 

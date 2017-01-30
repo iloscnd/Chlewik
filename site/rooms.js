@@ -20,7 +20,7 @@ var express = require('express');
     next();
 });*/
 
-var routerFun = function(roomz,userz, guestz,io) { //potrzebuję do sprawdzenia aktualności uprawnień
+var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzenia aktualności uprawnień
 
             io.on('connection', function(socket) {
                 console.log('connected in room');
@@ -100,7 +100,16 @@ var routerFun = function(roomz,userz, guestz,io) { //potrzebuję do sprawdzenia 
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło - usuwamy tylko entered, bo resztę się i tak ustawi przy ponownym
         //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
         if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
-        if( req.session.guest && guestz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
+        if( req.session.legit.entered && req.session.guest && guestz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
+        if ( req.session.legit.entered && !req.session.guest) {
+            var user = userz.get(req.session.name);
+            if (user != undefined && user.id != req.session.personID) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
+        }
+        if ( req.session.legit.entered && req.session.guest) {
+            var guest = guestz.get(req.session.name);
+            if (guest != undefined && guest.id != req.session.personID) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
+        }
+        //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, też z ID
 
         var ses = req.session;
         if (!ses.legit.entered) { 
@@ -112,7 +121,7 @@ var routerFun = function(roomz,userz, guestz,io) { //potrzebuję do sprawdzenia 
         next();
     });
     
-    var inroomRouter = require('./inroom')(roomz,userz, guestz,io);
+    var inroomRouter = require('./inroom')(roomz,userz, guestz,io,id);
     router.use('/room', inroomRouter);
     
     router.all('/', (req,res) =>{
@@ -184,10 +193,14 @@ console.log(JSON.stringify(req.session.urlLegit));
         req.session.roomPwd = req.body.pwd; //?
         req.session.legit.roomEntered = name;
         console.log(name);
+
+        var theID = id;
+
         if (flag) {
             var pwdTrimmed = req.body.pwd.trim();
             var flag = (!(pwdTrimmed.length == 0))
             var newRoom = {
+                id : theID,
                 name : req.body.roomName,
                 pwd : req.body.pwd,
                 hasPwd : flag,
@@ -197,8 +210,11 @@ console.log(JSON.stringify(req.session.urlLegit));
                 ready : new Map(),
                 guru : req.session.name //taki co mu ma być wolno usuwać innych - ten, co utworzył
             };
+            ++id;
             roomz.set(name,newRoom);
         }
+        else theID = roomz.get(name).id;
+        req.session.roomEnteredID = theID;  
         newRoom.people = 1;
         newRoom.unready.set(req.session.name);
         console.log(name);
@@ -220,6 +236,10 @@ console.log(JSON.stringify(req.session.urlLegit));
         if (room.people == 2) { console.log("PEŁEN"); res.redirect('/rooms?err=crowded'); return; } //TYLKO DLA DWUOSOBOWYCH
         req.session.roomPwd = pwd; //to nie jest potrzebne
         req.session.legit.roomEntered = name;
+
+        //jak się gdzieś wchodzi, to hasła porównuje temu z aktualnym id, więc to id ustawiamy - podobnie z user
+        req.session.roomEnteredID = room.id; 
+
         room.people++;
         room.unready.set(req.session.name);
         res.redirect('/rooms/room/'+'?roomName='+name);

@@ -337,7 +337,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
                     io.to(rnm+"_game").emit('change',[msg,turn[0]%2]);
                     state[msg] = turn[0]%2 + 1;
                     turn[0]++;
-
+                    console.log(state);
                     //check if won
                     won = false;
                     for( i = 0; i<3; i++)
@@ -352,17 +352,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
                         won = true;
                     
                     if(won){
-                        //console.log(state);
-                        /*for(i=0; i<9; i++){
-                            //io.to(rnm+"_game").emit('clear',i) //bez sensu, bo nie pyta o zgodę
-                            state[i] = 0; //i tak nie starczy chyba do nowej gry??
-                        }*/
-
-                        //to chyba tworzy nowy obiekt i tamten wskaźnik już nie działa
-                        //state = [0,0,0,0,0,0,0,0,0]; //dla jednej gry
-                        //player = [undefined, undefined];
-
-                        ///delete game; //to NIE DZIAŁA, jest tylko czytanie z sesji
+                        
 
                         delete room.game; // to chyba nawet działa, bo żaden nie ma uprawnień na /leave w grze potem   //CHYBA NIE ŚMIGA? a może zadziała? w końcu wskaźnik to wskaźnik
 
@@ -373,6 +363,20 @@ var returnRouter = function(roomz,userz, guestz,io) {
                         io.to(rnm+"_game").emit('won', socket.handshake.session.name);
                         
                         //end[0] = 1;
+                    }
+                    else
+                    {
+                        var draw = true;
+                        for( i = 0; i<9; i++){
+                            if(state[i] == 0)
+                                draw = false;
+                        }
+                        if(draw){
+                            console.log("draw");
+                            delete room.game;
+                            end[0] = 1; 
+                            io.to(rnm+"_game").emit('draw', null);
+                        }
                     }
                 }
             }

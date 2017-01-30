@@ -27,11 +27,15 @@ var routerFun = function(roomz,userz, guestz,io) { //potrzebuję do sprawdzenia 
                 socket.on('loggedIn', function() { //rn to na razie nazwa pokoju
                     
                     console.log("connected");
-
+ /*                   
+                    console.log("[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]"+JSON.stringify(socket.handshake.session));
+                    
                     socket.handshake.session.loginConnected = 1;
                     delete socket.handshake.session.loginDisconnected;
                     socket.handshake.session.save();
 
+                    console.log("[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]"+JSON.stringify(socket.handshake.session));
+*/
                     if (socket.handshake.session.guest) {
                         var guest = guestz.get(socket.handshake.session.name);
                         if (guest == undefined ) return;
@@ -52,9 +56,15 @@ var routerFun = function(roomz,userz, guestz,io) { //potrzebuję do sprawdzenia 
 
                         var date = new Date(); //bierze aktualną
                         // /var tm = date.getTime(); //jednak nie wziąłem tego
+/*                        
+                        console.log("{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}"+JSON.stringify(socket.handshake.session));
+                        
                         delete socket.handshake.session.loginConnected;
                         socket.handshake.session.loginDisconnected = date;
                         socket.handshake.session.save();
+
+                        console.log("{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}"+JSON.stringify(socket.handshake.session));
+*/                        
                         /*
                         if (!room.playersConnected) room.lastConnected = date;
                         else {

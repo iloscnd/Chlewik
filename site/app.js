@@ -21,12 +21,12 @@ var session = require('express-session')
 var FileStore = require('session-file-store')(session); //to sprawia, że jak się ustawi, to będzie zapisywał ok a nie w RAM
 
 var sesStore = new FileStore({
-        path : './sessions', //to domyślne, ale napiszę żeby bylo widać
-        reapInterval : 60 //w sekundach po jakim czasie usuwać wygaśnięte
+        path : './sessions'//, //to domyślne, ale napiszę żeby bylo widać
+        //reapInterval : 60 //w sekundach po jakim czasie usuwać wygaśnięte - na kompie u mnie to zupełnie psuje
     }); //FileStore jest var, patrz góra!
 
  var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
-    store: sesStore,
+    store: sesStore, //na kompie coś się wtedy strasznie psuje u mnie
     secret: 'keyboard cat',
     maxAge: 10*60000,
     resave : true, //piszą że jak czas ważności, może on musi nadpisywać ostatnie użycie bo wygaśnie inaczej https://github.com/expressjs/session
@@ -193,6 +193,7 @@ app.use((req,res,next) => {
     return; //a może by res.end()?
 });
 
+
 //timeout żeby wywalało jak ktoś się sam nie wyloguje itp
 setInterval( function() {
 
@@ -250,6 +251,7 @@ setInterval( function() {
         //ale użytkowników przecie mam nie usuwać bo to użytkownicy...
 
 }, 60*1000); //co minutę, bo i po co częściej a tak nie obciąża serwera
+
 
 server.listen(process.env.PORT || 3000);
 

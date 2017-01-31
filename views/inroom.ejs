@@ -17,10 +17,7 @@
                 //p.innerHTML =  "hej" ;
                 
                 var socket = io();
-                /*var obj = {
-                    session : ses , 
-                    roomname : room.name
-                };*/
+                
                 socket.emit('getInRoom'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
 
                 $('#chatForm').submit(function(){

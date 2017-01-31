@@ -91,6 +91,7 @@ var routerFun = function(userz,id) {
             if (err)
                 console.log(err);
             
+            console.log("SELECT name FROM users WHERE name = '" + name + "';");
             console.log(name);
             console.log(result);
 

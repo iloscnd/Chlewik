@@ -90,7 +90,7 @@ var routerFun = function(userz) {
                     req.session.legit.entered = 1;
                     req.session.name = req.body.name;
                     req.session.guest = 0;
-                    var insertQuery = client.query( "INSERT INTO users (id, name, pass) VALUES (1, '" + name + "' '" + req.body.pwd + "')");
+                    var insertQuery = client.query( "INSERT INTO users (id, name, pass) VALUES (1, '" + name + "', '" + req.body.pwd + "')");
                     insertQuery.on('end',function(){
                         res.redirect('/rooms');
                         return; //a może by res.end()?

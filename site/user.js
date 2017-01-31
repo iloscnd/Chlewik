@@ -100,16 +100,16 @@ var routerFun = function(userz,id) {
             //console.log(resp+"\n");
             res.send(resp);
             console.log(resp);
-            client.end();
-            //return; //a może by res.end()?
+            done();
+            return; //a może by res.end()?
         });
 
-        query.on('error',function(){
+        query.catch('error',function(err){
             res.send("NO");
 
             console.log("hey");
-            client.end();
-            //return;
+            done();
+            return;
         })
 /*using users
         if (userz.get(name) != undefined) flag = false;

@@ -96,10 +96,12 @@ var routerFun = function(userz,id) {
                 if (flag) resp="OK"; else resp="NO";
                 //console.log(resp+"\n");
                 res.send(resp);
+                client.end();
                 return; //a może by res.end()?
             });
             query.on('error',function(){
                 res.send("NO");
+                client.end();
                 return;
             })
         });

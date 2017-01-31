@@ -266,20 +266,35 @@ var routerFun = function(userz,id) {
         if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         
 
-        var flag = true;
+        //var flag = true;
         var name = req.session.name;
         //console.log("zakładam\n");
-        if (userz.get(name) == undefined) flag = false;
-        if (flag) {
-            var user = userz.get(name);
-            user.pwd=req.body.newPwd;
+        //if (userz.get(name) == undefined) flag = false;
+        client.query("SELECT id FROM users WHERE name = '" + req.session.name + "';",function(err, result){
+            if(Uerr)
+                console.log(Uerr);
+            console.log(Uresult);
+            
+            //var user = userz.get(name);
+            //user.pwd=req.body.newPwd;
             //console.log("|||/////////////////////////////////zmieniam");
             
-            res.redirect('/user/settings?info=pwd');
-            return; //a może by res.end()?
-        }
-        else { res.redirect('/redirectDefault');return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+            if(result && result.rowCount != 0){
+                client.query("UPDATE users SET City='" + req.body.newPwd + "' WHERE name = '" + name + "';", function(Uerr,Uresult){
+                    if(Uerr)
+                        console.log(Uerr);
+                    console.log(Uresult);
+                });
+
+                res.redirect('/user/settings?info=pwd');
+                return; //a może by res.end()?
+            }
+            else { 
+                res.redirect('/redirectDefault');
+                return; /*a może by res.end()?*/ 
+            } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
         
+        });
     });
 
     router.all("/logout",(req,res)=>{

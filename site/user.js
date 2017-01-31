@@ -90,9 +90,16 @@ var routerFun = function(userz) {
                     req.session.legit.entered = 1;
                     req.session.name = req.body.name;
                     req.session.guest = 0;
-                    res.redirect('/rooms');
-                    return; //a może by res.end()?
-                }
+                    var insertQuery = client.query( "INSERT INTO users (id, name, pass) VALUES (1, '" + name + "' '" + pass + "')");
+                    insertQuery.on('end',function(){
+                        res.redirect('/rooms');
+                        return; //a może by res.end()?
+                    });
+                    insertQuery.on('err',function(){
+                        res.redirect('/rooms');
+                        return; //a może by res.end()?
+                    });
+               }
                 else { res.redirect('/redirectDefault');
                     return; /*a może by res.end()?*/
                 } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający

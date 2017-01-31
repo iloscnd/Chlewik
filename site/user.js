@@ -302,7 +302,11 @@ var routerFun = function(userz,id) {
         
         var name = req.session.name;
         if(req.session.legit.entered==1 && req.session.guest!=1) {
-            userz.delete(name);
+            client.query("DELETE FROM users WHERE name = '"+ name + "';",function(err,result){
+                if(err)
+                    console.log(err);
+                console.log(result);
+            });
             req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
             res.redirect('/');
             return; //a może by res.end()?

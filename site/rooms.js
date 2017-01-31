@@ -102,7 +102,7 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
                 } //B. WAŻNE!!! 
                 
                 else if ( req.session.legit.entered && !req.session.guest) {
-                    if (result.rowCount != 0 && resuly.row[0].id != req.session.personID) { /*console.log("usuwam że zalogowany");*/ 
+                    if (result.rowCount != 0 && result.row[0].id != req.session.personID) { /*console.log("usuwam że zalogowany");*/ 
                         delete req.session.legit.entered; 
                         delete req.session.legit.roomEntered; 
                         delete req.session.legit.inGame; 

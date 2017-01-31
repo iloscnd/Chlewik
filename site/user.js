@@ -83,7 +83,7 @@ var routerFun = function(userz,id) {
         //console.log(name+"\n");
         client.connect();
             
-        if (err) throw err;
+        //if (err) throw err;
         
         console.log('Connected to postgres on ajaxIsFree');
 

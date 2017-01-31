@@ -82,7 +82,7 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
         
         if(!req.session.guest){
             //var user = userz.get(req.session.name);
-            client.query( "SELECT id FROM users WHERE name = '" + name + "';",function(err, result){
+            client.query( "SELECT id FROM users WHERE name = '" + req.session.name + "';",function(err, result){
                 if(err)
                     console.log(err);
                 

@@ -26,7 +26,7 @@ var sesStore = new FileStore({
     }); //FileStore jest var, patrz góra!
 
  var sessionMid = session({ //http://www.webdevelopment-tutorials.com/express-by-examples/10/session-with-file-storage/8
-    store: sesStore, //na kompie coś się wtedy strasznie psuje u mnie
+    //store: sesStore, //na kompie coś się wtedy strasznie psuje u mnie
     secret: 'keyboard cat',
     maxAge: 10*60000,
     resave : true, //piszą że jak czas ważności, może on musi nadpisywać ostatnie użycie bo wygaśnie inaczej https://github.com/expressjs/session

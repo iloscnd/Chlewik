@@ -48,9 +48,11 @@ var routerFun = function(roomz,userz, guestz,io,id){
     //});
     var gameRouter = require('./game')(roomz,userz, guestz,io);
     router.use('/game',gameRouter);
-
+    
     io.on('connection', function(socket) {
         console.log('connected in room');
+        var chat;
+        var chatLast;
         socket.on('getInRoom', function() { //rn to na razie nazwa pokoju
             if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
             var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
@@ -63,7 +65,8 @@ var routerFun = function(roomz,userz, guestz,io,id){
             var room = roomz.get(rnm); 
             if (room == undefined) { console.log("OJEJ");  return;}
             var roomname = room.name;
-            var chat = room.chat;
+            chat = room.chat;
+            chatLast = room.chatLast
 
 
             socket.join(roomname);
@@ -181,7 +184,32 @@ var routerFun = function(roomz,userz, guestz,io,id){
             room.unready.delete(unm);
             room.ready.set(unm, true);
             if (room.unready.size == 0 && room.ready.size == 2) { console.log("\nPOCZ\n"); io.to(rnm).emit('begin game'); } //tylko dla 2 -osob.
-            else io.to(rnm).emit('sbd entered',room.connectedPeople);
+            else io.to(rnm).emit('sbd entered',room.connectedPeople); //chyba niepotrzebne
+            var nameStyle = "user";
+                if(socket.handshake.session.guest)
+                    nameStyle = "guest"
+            chat[chatLast[0]] = "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "jest gotowy do gry" + "</li>";
+            chatLast[0] = (chatLast[0]+1)%10;
+            io.to(rnm).emit('chat message', "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "jest gotowy do gry" + "</li>");
+        });
+        socket.on('unready', function() {
+            if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) { console.log("ŁOJENY"); return; }
+            var rnm = socket.handshake.session.legit.roomEntered; //to istnieje, o ile wtyczka nie była połączona i próbuje ze starego uruchomienia aplikacji
+            var unm = socket.handshake.session.name;
+            if (rnm == undefined || unm == undefined) { console.log("ŁOJENY"); return; }
+            console.log("niegotowy w "+rnm);
+            var room = roomz.get(rnm); 
+            if (room == undefined) { console.log("ŁOJENYJEJKU"); return; }
+            room.ready.delete(unm);
+            room.unready.set(unm, true);
+            //if (room.unready.size == 0 && room.ready.size == 2) { console.log("\nPOCZ\n"); io.to(rnm).emit('begin game'); } //tylko dla 2 -osob.
+            io.to(rnm).emit('sbd entered',room.connectedPeople); //chyba niepotrzebne
+            var nameStyle = "user";
+                if(socket.handshake.session.guest)
+                    nameStyle = "guest"
+            chat[chatLast[0]] = "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "nie jest gotowy do gry" + "</li>";
+            chatLast[0] = (chatLast[0]+1)%10;
+            io.to(rnm).emit('chat message', "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "nie jest gotowy do gry" + "</li>");
         });
         socket.on('sbd entered', function(room) { //to chyba nic nie robi
             socket.emit('sbd entered', room);

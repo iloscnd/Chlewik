@@ -9,36 +9,53 @@
   <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     
   <body>
-    <div id="chatBox" style="float: right; position: relative;   width: 250px; height: 300px">
-    
-      <ul id="chat" style="overflow: auto; height:250px; list-style-type: none;" >
-        <% for(i = 0; i < 10; i++) {%>
-          <%- chat[(i+chatLast)%10] %>
-        <%}%>  
-      </ul>
-      
-      <form style="position: absolute; height: 0px; bottom: 0; ">
-        <input id="chatMsg" autocomplete="off" /><button>Send</button>
-      </form>
-    
-    </div> 
+    <center>
+      <div class="container" style="width:700px">
+            <% if (ses.guest==0) { %>  <!-- jak z innym tagiem niż p, to wychodzi mu tekst za ramkę czasem -->
+                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Zalogowano jako <text class="user" ><%= ses.name %></text></p> </div>
+            <% } else { %>
+                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Wszedłeś jako gość <text class="guest"><%= ses.name %></text></p> </div>
+            <% } %>
+      </div>
+      <br>
+      <br>
+    <div class = "containerRoom" class = "containerRoom" style="width:700px">
+        <div class = "container" style="float:left; width:43%; ">
+            
+                <table>
+                  <% for(i = 0; i < 9; i++) {%>
+                    <% if( i % 3 == 0 && i > 0) {%>
+                      </tr> <%}%>
+                    <% if( i % 3 == 0) {%>
+                      <tr> <% } %>
+                  <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
+                </table>
 
-    <table>
-      <% for(i = 0; i < 9; i++) {%>
-        <% if( i % 3 == 0 && i > 0) {%>
-          </tr> <%}%>
-        <% if( i % 3 == 0) {%>
-          <tr> <% } %>
-      <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
-    </table>
-
-    <div style="float:left;">
-      <ul style="list-style-type: none;">
-        <li><img src="tictac/arrow.png" alt="arrow" id="arr1" style="visibility: <%=p1vis%>" ><text id="p1"></text></li>
-        <li><img src="tictac/arrow.png" alt="arrow" id="arr2" style="visibility: <%=p2vis%>" ><text id="p2"></text></li>
-      </ul>
-      <button id="surr" class="button">Poddaj się</button>
+                <div >
+                  Teraz tura gracza:  <!-- DODAĆ NA POCZĄTKU CZYJA I LOSOWAĆ -->
+                  <p id="p1" style="text-decoration:underline; width:90%; overflow:auto; text-overflow:ellpsis"></p></li> <!-- najlepiej by ich też podświetlać -->
+                  <p id="p2" style="width:90%; overflow:auto; text-overflow:ellpsis"></p></li>
+                  <button id="surr" class="button">Poddaj się</button>
+                </div>
+            
+        </div>
+        <div id="chatBox" class = "namediv"  style="float: right; width:43%; ">
+        
+            <ul id="chat" style="text-align:left; margin:0; padding:10px; overflow: auto; height:350px; list-style-type: none;" >
+            <% for(i = 0; i < 10; i++) {%>
+              <%- chat[(i+chatLast)%10] %>
+            <%}%>  
+          </ul>
+          
+          <form id="chatForm" style="bottom: 0; " method="">
+                <input id="chatMsg" autocomplete="off" /><button>Wyślij</button>
+          </form>
+        
+        </div> 
     </div>
+    
+
+    
 
     <script>
       var socket = io();
@@ -64,13 +81,13 @@
       socket.on('change', function(msg){
         if(msg[1]==0){
           $("#"+msg[0]).attr("src","tictac/tic.png");
-          $("#arr1").css('visibility','hidden')
-          $("#arr2").css('visibility','visible')
+          $("#p1").attr('style','text-decoration:none; width:90%; overflow:auto; text-overflow:ellpsis')
+          $("#p2").attr('style','text-decoration:underline; width:90%; overflow:auto; text-overflow:ellpsis')
         }
         else{
           $("#"+msg[0]).attr("src","tictac/tac.png");
-          $("#arr2").css('visibility','hidden')
-          $("#arr1").css('visibility','visible')
+          $("#p2").attr('style','text-decoration:none; width:90%; overflow:auto; text-overflow:ellpsis')
+          $("#p1").attr('style','text-decoration:underline; width:90%; overflow:auto; text-overflow:ellpsis')
         }
       });
     
@@ -102,6 +119,8 @@
           alert(msg + " wygrał!");
           //było window location od razu do pokoju
         });*/
+
+        // alert jest przeglądarkowy i nic się z nim nie zrobi jeśli chodzi o wygląd, trzeba by inaczej
         alert(msg + " wygrał!");
         window.location = "/rooms/room/game/leave";
       });
@@ -112,5 +131,6 @@
       });
 
     </script>
+    <center>
   </body>
 </html>

@@ -36,13 +36,19 @@
 
                 socket.on('sbd entered', function(howManyAre) { //dbam wcześniej żeby nie undef
                     var p = document.getElementById('pisz');
-                    p.innerHTML = "liczba aktualnie połączonych ludzi w pokoju:"+ howManyAre ; // TU LEPIEJ ZMIENIĆ, ŻEBY BYŁA JAKAŚ FUNKCJA ODŚWIEŻ STAN CAŁEGO POKOJU I GRY POTEM
+                    p.innerHTML = "Liczba aktualnie połączonych graczy w pokoju:"+ howManyAre ; // TU LEPIEJ ZMIENIĆ, ŻEBY BYŁA JAKAŚ FUNKCJA ODŚWIEŻ STAN CAŁEGO POKOJU I GRY POTEM
                 });
 
                 var btReady = document.getElementById('ready');
                 btReady.addEventListener('click', function() {
 
                     socket.emit('ready');
+                });
+
+                var btReady = document.getElementById('unready');
+                btReady.addEventListener('click', function() {
+
+                    socket.emit('unready');
                 });
 
                 socket.on('begin game', function() {
@@ -73,30 +79,63 @@
 
     <body>
     <center>
-        Witaj w pokoju <%= room.name %> <br>
-        Gra rozpoczyna się automatycznie, gdy wszyscy są gotowi <br>
-        <p id="pisz"><%=room.name%></p> <!-- nie może być spacji jak patrzę na innerHTML ; zrobić lepiej osobny niewidoczny-->
-        <button class="button" id="ready">Potwierdź gotowość do gry</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
+        <div class="container" style="width:700px">
+            <% if (ses.guest==0) { %>  <!-- jak z innym tagiem niż p, to wychodzi mu tekst za ramkę czasem -->
+                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Zalogowano jako <text class="user" ><%= ses.name %></text></p> </div>
+            <% } else { %>
+                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Wszedłeś jako gość <text class="guest"><%= ses.name %></text></p> </div>
+            <% } %>
+        </div>
+        <br>
+        <br>
+        <!-- <a href="/">
+            <img src="placeholderLogo.png" alt="Logo" height=150px width=300px > 
+        </a> -->
+        <div class = "container" style="width:700px">
+            
+        <h3 style="width:90%; overflow:auto;">Witaj w pokoju </h3><h2> <%= room.name %> <br> </h2>
+        Gra rozpoczyna się automatycznie,<br>gdy wszyscy są gotowi <br>
+        <h4 id="pisz" style="width:90%; overflow:auto;"><%=room.name%></h4> <!-- nie może być spacji jak patrzę na innerHTML ; zrobić lepiej osobny niewidoczny-->
         
-        <form id='go' method="POST" action="/rooms/room/leave" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
-            <button class="button" style="float:right" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
-        </form>
+        
+        
+        </div>
+    
+    <br>
+    <br>
+    <div class = "containerRoom" class = "containerRoom" style="width:700px">
+        <div class = "container" style="float:left; width:33%; ">
+            
+                <form id='go' method="POST" action="/rooms/room/leave" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
+                        <button class="button" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
+                </form>
+            
+                <br>
+                <br>
+            
+                <button class="button" id="ready">Gotów do gry</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
+
+                <br>
+                <br>
+            
+                <button class="button" id="unready">Niegotowy</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
+            
+        </div>
+        <div id="chatBox" class = "namediv"  style="float: right; width:53%; ">
+        
+            <ul id="chat" style="text-align:left; margin:0; padding:10px; overflow: auto; height:350px; list-style-type: none;" >
+                <% for(i = 0; i < 10; i++) {%>
+                <%- chat[(i+chatLast)%10] %>
+                <%}%>  
+            </ul>
+            <br>
+            <form id="chatForm" style="bottom: 0; " method="">
+                <input id="chatMsg" autocomplete="off" /><button>Wyślij</button>
+            </form>
+            
+        </div> 
+    </div>
     </center>
-
-    <div id="chatBox" style="float: right; position: relative;   width: 250px; height: 300px">
-    
-      <ul id="chat" style="overflow: auto; height:250px; list-style-type: none;" >
-        <% for(i = 0; i < 10; i++) {%>
-          <%- chat[(i+chatLast)%10] %>
-        <%}%>  
-      </ul>
-      
-      <form id="chatForm" style="position: absolute; height: 0px; bottom: 0; " method="">
-        <input id="chatMsg" autocomplete="off" /><button>Send</button>
-      </form>
-    
-    </div> 
-
     </body>
 
     

@@ -10,6 +10,8 @@ pg.defaults.ssl = true;
 //sprawdzenie poziomu uprawnień - tu są 2 poziomy tak samo jak w guest
 // na początku bez uprawnień tak jak tam
 
+var client = new pg.Client(process.env.DATABASE_URL);
+
 var routerFun = function(userz,id) {
 
     
@@ -79,32 +81,36 @@ var routerFun = function(userz,id) {
         var flag = true;
         var name = req.body.name; //bo post
         //console.log(name+"\n");
-        pg.connect(process.env.DATABASE_URL, function(err, client) {
+        client.connect();
             
-            if (err) throw err;
-            
-            console.log('Connected to postgres on ajaxIsFree');
+        if (err) throw err;
+        
+        console.log('Connected to postgres on ajaxIsFree');
 
-            var query = client.query( "SELECT name FROM users WHERE name = '" + name + "';")
-            
-            query.on('row',function(row){
-                console.log(row);
-                flag = false;
-            })
-            query.on('end',function(){
-                var resp = "";
-                if (flag) resp="OK"; else resp="NO";
-                //console.log(resp+"\n");
-                res.send(resp);
-                client.end();
-                return; //a może by res.end()?
-            });
-            query.on('error',function(){
-                res.send("NO");
-                client.end();
-                return;
-            })
+        var query = client.query( "SELECT name FROM users WHERE name = '" + name + "';")
+        
+        query.on('row',function(row){
+            console.log(row);
+            flag = false;
+        })
+        
+        query.on('end',function(){
+            var resp = "";
+            if (flag) resp="OK"; else resp="NO";
+            //console.log(resp+"\n");
+            res.send(resp);
+            console.log(resp);
+            client.end();
+            //return; //a może by res.end()?
         });
+
+        query.on('error',function(){
+            res.send("NO");
+
+            console.log("hey");
+            client.end();
+            //return;
+        })
 /*using users
         if (userz.get(name) != undefined) flag = false;
         var resp = "";

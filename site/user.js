@@ -148,7 +148,6 @@ var routerFun = function(userz,id) {
         
         if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         //console.log("czyDobre\n");
-        var flag = true;
         var name = req.body.name; //z POST są w body a nie query
         var pwd = req.body.pwd;
         //console.log(name+"\n");
@@ -181,12 +180,28 @@ var routerFun = function(userz,id) {
     router.post('/ajaxPwd', (req,res) => {
         var name = req.session.name; //z POST są w body a nie query
         var pwd = req.body.pwd;
-        var getPwd ;
         var resp = "";
-        if (userz.get(name) != undefined) getPwd = userz.get(name).pwd;
-        if (getPwd!= undefined && getPwd == pwd) resp = "OK"; else resp = "BAD";
-        res.send(resp);
-        return; //a może by res.end()?
+        var getPwd ;
+   
+        var query = client.query( "SELECT pass FROM users WHERE name = '" + name + "';",function(err, result){
+            if (err)
+                console.log(err);
+            console.log("SELECT pass FROM users WHERE name = '" + name + "';");
+            
+            if(!result)
+                res.send("BAD");
+            else {
+                console.log(result)
+                if(result.rowCount==0)
+                    res.send("BAD");
+                else
+                    if(result.rows[0].pass == pwd)
+                        res.send("OK");
+                    else
+                        res.send("BAD");
+            }
+            return; //a może by res.end()?           
+        });
     });
 
     //trzeba usersz, więc w routerFun - dopiero odtąd i tak mają być potrzebne uprawnienia, a nie wcześniej
@@ -194,7 +209,7 @@ var routerFun = function(userz,id) {
     router.use('/', (req,res,next) => {
 
         if(!req.session.guest){
-            //var user = userz.get(req.session.name);
+
             client.query( "SELECT id FROM users WHERE name = '" + req.session.name + "';",function(err, result){
                 if(err)
                     console.log(err);

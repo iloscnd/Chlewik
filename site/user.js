@@ -74,6 +74,7 @@ var routerFun = function(userz) {
             var selectQuery = client.query( "SELECT name FROM users ;");
             selectQuery.on('row',function(row){
                 console.log(row);
+                console.log("read row");
             });
 
             selectQuery.on('end',function(){

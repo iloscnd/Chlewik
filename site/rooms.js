@@ -42,10 +42,10 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
                         delete guest.lastConnected;
                     }
                     else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                        var user = userz.get(socket.handshake.session.name);
-                        if (user == undefined ) return;
-                        if (!user.connected) user.connected = 0;
-                        delete user.lastConnected;
+                      //  var user = userz.get(socket.handshake.session.name);
+                     //   if (user == undefined ) return;
+                    //    if (!user.connected) user.connected = 0;
+                   //     delete user.lastConnected;
                     }
 
                     socket.on('disconnect', function() { // UWAGA: TYLKO SOCKETOM ZALOGOWANYM - jak ktoś np. w grze, to będzie tu rozłączony, ale głębiej połączony
@@ -64,10 +64,10 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
                             delete guest.connected;
                         }
                         else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                            var user = userz.get(socket.handshake.session.name);
-                            if (user == undefined ) return;
-                            user.lastConnected = date;
-                            delete user.connected;
+                           // var user = userz.get(socket.handshake.session.name);
+                          //  if (user == undefined ) return;
+                         //   user.lastConnected = date;
+                        //    delete user.connected;
                         }
                     }); 
                 });

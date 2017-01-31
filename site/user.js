@@ -128,7 +128,7 @@ var routerFun = function(userz,id) {
         var query = client.query( "SELECT pass FROM users WHERE name = '" + name + "';",function(err, result){
             if (err)
                 console.log(err);
-            
+            console.log("SELECT pass FROM users WHERE name = '" + name + "';");
             if(!result)
                 res.send("BAD");
             else {
@@ -136,7 +136,7 @@ var routerFun = function(userz,id) {
                 if(result.rowCount==0)
                     res.send("BAD");
                 else
-                    if(result[0].pass == pwd)
+                    if(result.rows[0].pass == pwd)
                         res.send("OK");
                     else
                         res.send("BAD");

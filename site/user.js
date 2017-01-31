@@ -132,7 +132,7 @@ var routerFun = function(userz,id) {
             if(!result)
                 res.send("BAD");
             else {
-                console.log(result[0])
+                console.log(result)
                 if(result.rowCount==0)
                     res.send("BAD");
                 else

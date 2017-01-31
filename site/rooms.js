@@ -73,7 +73,7 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
                 });
             });
 
-    //trzeba userz, guestz, więc w routerFun
+    //trzeba usersz, guestz, więc w routerFun
     router.use('/', (req,res,next) => {
 
         
@@ -81,7 +81,6 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
         //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
         
         if(!req.session.guest){
-            //var user = userz.get(req.session.name);
             client.query( "SELECT id FROM users WHERE name = '" + req.session.name + "';",function(err, result){
                 if(err)
                     console.log(err);

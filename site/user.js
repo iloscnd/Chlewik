@@ -12,6 +12,9 @@ pg.defaults.ssl = true;
 
 var client = new pg.Client(process.env.DATABASE_URL);
 
+client.connect();
+
+
 var routerFun = function(userz,id) {
 
     
@@ -81,11 +84,9 @@ var routerFun = function(userz,id) {
         var flag = true;
         var name = req.body.name; //bo post
         //console.log(name+"\n");
-        client.connect();
             
         //if (err) throw err;
         
-        console.log('Connected to postgres on ajaxIsFree');
 
         var query = client.query( "SELECT name FROM users WHERE name = '" + name + "';",function(err, result){
             if (err)
@@ -98,10 +99,9 @@ var routerFun = function(userz,id) {
             
 
             res.send("NO");
-            
+            return; //a może by res.end()?           
         });
-        client.end();
-        return; //a może by res.end()?
+ 
 
 /*using users
         if (userz.get(name) != undefined) flag = false;

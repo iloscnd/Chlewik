@@ -95,13 +95,14 @@ var routerFun = function(userz,id) {
             console.log(name);
             console.log(result);
             
-            client.end();
+            
 
             res.send("NO");
             
-            return; //a może by res.end()?
-
         });
+        client.end();
+        return; //a może by res.end()?
+
 /*using users
         if (userz.get(name) != undefined) flag = false;
         var resp = "";

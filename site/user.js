@@ -34,19 +34,38 @@ var routerFun = function(userz) {
         var flag = false;
         //od razu że nie undefined i że jak trzeba - ale uwaga, bo bez .pwd to cały obiekt
         if (userz.get(name) != undefined &&  userz.get(name).pwd == pwd) flag = true;
-    console.log("PIĘĆ"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));
+        console.log("PIĘĆ"+JSON.stringify(req.session.legit));
+        console.log(JSON.stringify(req.session.urlLegit));
     /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
-        if (flag) {
-            req.session.legit.entered = 1;
-            req.session.name = req.body.name;
-            req.session.guest = 0;
-            res.redirect("/rooms");
-            return; //a może by res.end()?
-        }
-    else { res.redirect('/redirectDefault'); return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
-        //co prawda w ten sposób sprawdza się 2 razy :/
+        pg.connect(process.env.DATABASE_URL, function(err, client) {
+            if (err) throw err;
+            console.log("connecteds");
+            
+            flag = false;
+
+            var query = client.query( "SELECT pass FROM users WHERE name = '" + name + "';");
+            
+            query.on('row',function(row){
+                flag = true;//znalazł
+                if(row.pass != pwd)
+                    flag = false;
+                console.log(row);
+            });
+            query.on('end',function(){
+                if (flag) {
+                    req.session.legit.entered = 1;
+                    req.session.name = req.body.name;
+                    req.session.guest = 0;
+                    res.redirect("/rooms");
+                    return; //a może by res.end()?
+                }
+                else { res.redirect('/redirectDefault'); 
+                    return; /*a może by res.end()?*/ 
+                } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+                    //co prawda w ten sposób sprawdza się 2 razy :/
+            });
+        });
     });
 
     router.post('/create', (req,res) =>{
@@ -71,7 +90,7 @@ var routerFun = function(userz) {
             if (err) throw err;
             console.log("connecteds");
             //spraw dź czy jest  w bazie
-            var selectQuery = client.query( "SELECT name FROM users WHERE name = '" + name + "'");
+            var selectQuery = client.query( "SELECT name FROM users WHERE name = '" + name + "';");
             selectQuery.on('row',function(row){
                 flag = false;
                 console.log("read row");
@@ -90,7 +109,7 @@ var routerFun = function(userz) {
                     req.session.legit.entered = 1;
                     req.session.name = req.body.name;
                     req.session.guest = 0;
-                    var insertQuery = client.query( "INSERT INTO users (id, name, pass) VALUES (1, '" + name + "', '" + req.body.pwd + "')");
+                    var insertQuery = client.query( "INSERT INTO users (id, name, pass) VALUES (1, '" + name + "', '" + req.body.pwd + "');");
                     insertQuery.on('end',function(){
                         res.redirect('/rooms');
                         return; //a może by res.end()?

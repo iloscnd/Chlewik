@@ -92,13 +92,12 @@ var routerFun = function(userz,id) {
             if (err)
                 console.log(err);
             
-            console.log("SELECT name FROM users WHERE name = '" + name + "';");
-            console.log(name);
-            console.log(result);
-            
-            
-
-            res.send("NO");
+            if(!result)
+                res.send("NO");
+            if(result.rowCount==0)
+                res.send("OK");
+            else
+                res.send("NO");
             return; //a może by res.end()?           
         });
  

@@ -28,8 +28,44 @@ var routerFun = function(userz,id) {
         //console.log("wchodzę\n");
         var flag = false;
         //od razu że nie undefined i że jak trzeba - ale uwaga, bo bez .pwd to cały obiekt
-        if (userz.get(name) != undefined &&  userz.get(name).pwd == pwd) flag = true;
         if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+
+        var query = client.query( "SELECT pass id FROM users WHERE name = '" + name + "';",function(err, result){
+            if (err)
+                console.log(err);
+            console.log(result);
+            
+            if(!result){
+                res.redirect('/redirectDefault');
+                 return;
+            }
+            else {
+                console.log(result)
+                if(result.rowCount==0){
+                    res.redirect('/redirectDefault');
+                    return;
+                }
+                else
+                    if(result.rows[0].pass == pwd){
+
+                        req.session.legit.entered = 1;
+                        req.session.name = name;
+                        req.session.personID = result.rows[0].id;
+                        req.session.guest = 0;
+                        res.redirect("/rooms");
+
+                        return;
+                    }
+                    else{
+                       res.redirect('/redirectDefault');
+                        return;
+                    }
+            }
+            return; //a może by res.end()?           
+        });
+
+
+      /*  if (userz.get(name) != undefined &&  userz.get(name).pwd == pwd) flag = true;
 
         if (flag) {
             req.session.legit.entered = 1;
@@ -41,7 +77,7 @@ var routerFun = function(userz,id) {
             res.redirect("/rooms");
             return; //a może by res.end()?
         }
-    else { res.redirect('/redirectDefault'); return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+    else { res.redirect('/redirectDefault'); return; /*a może by res.end()?*/ //} //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
         //co prawda w ten sposób sprawdza się 2 razy :/
     });
 

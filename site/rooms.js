@@ -4,6 +4,15 @@ var express = require('express');
  var router = express.Router();
  router.use( express.static('./static')); //muszę
 
+var pg = require('pg');
+pg.defaults.ssl = true;
+
+//sprawdzenie poziomu uprawnień - tu są 2 poziomy tak samo jak w guest
+// na początku bez uprawnień tak jak tam
+
+var client = new pg.Client(process.env.DATABASE_URL);
+
+client.connect();
 
 //sprawdzenie poziomu uprawnień - 
 //starczy sprawdzić najgłębszy, bo przekierujemy na '/' a ono przekieruje najglębiej gdzie wolno i być powinien
@@ -33,10 +42,10 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
                         delete guest.lastConnected;
                     }
                     else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                        var user = userz.get(socket.handshake.session.name);
-                        if (user == undefined ) return;
-                        if (!user.connected) user.connected = 0;
-                        delete user.lastConnected;
+                      //  var user = userz.get(socket.handshake.session.name);
+                     //   if (user == undefined ) return;
+                    //    if (!user.connected) user.connected = 0;
+                   //     delete user.lastConnected;
                     }
 
                     socket.on('disconnect', function() { // UWAGA: TYLKO SOCKETOM ZALOGOWANYM - jak ktoś np. w grze, to będzie tu rozłączony, ale głębiej połączony
@@ -55,41 +64,94 @@ var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzen
                             delete guest.connected;
                         }
                         else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                            var user = userz.get(socket.handshake.session.name);
-                            if (user == undefined ) return;
-                            user.lastConnected = date;
-                            delete user.connected;
+                           // var user = userz.get(socket.handshake.session.name);
+                          //  if (user == undefined ) return;
+                         //   user.lastConnected = date;
+                        //    delete user.connected;
                         }
                     }); 
                 });
             });
 
-    //trzeba userz, guestz, więc w routerFun
+    //trzeba usersz, guestz, więc w routerFun
     router.use('/', (req,res,next) => {
 
         
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło - usuwamy tylko entered, bo resztę się i tak ustawi przy ponownym
         //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
-        if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) { /*console.log("usuwam że zalogowany");*/ delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
-        if( req.session.legit.entered && req.session.guest && guestz.get(req.session.name) == undefined) { /*console.log("usuwam że zalogowany");*/ delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
-        if ( req.session.legit.entered && !req.session.guest) {
-            var user = userz.get(req.session.name);
-            if (user != undefined && user.id != req.session.personID) { /*console.log("usuwam że zalogowany");*/ delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
-        }
-        if ( req.session.legit.entered && req.session.guest) {
-            var guest = guestz.get(req.session.name);
-            if (guest != undefined && guest.id != req.session.personID) { /*console.log("usuwam że zalogowany");*/ delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
-        }
-        //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, też z ID
+        
+        if(!req.session.guest){
+            client.query( "SELECT id FROM users WHERE name = '" + req.session.name + "';",function(err, result){
+                if(err)
+                    console.log(err);
+                
+                console.log(result);
+                if(!result) { /*console.log("usuwam że zalogowany");*/ 
+                    delete req.session.legit.entered; 
+                    delete req.session.legit.roomEntered; 
+                    delete req.session.legit.inGame; 
+                    req.session.save(); 
+                }
 
-        var ses = req.session;
-        if (!ses.legit.entered) { 
-            //console.log(ses.legit.entered+"WRACAM3");
-            res.redirect('/'); 
-            return; 
+                else if( req.session.legit.entered && !req.session.guest && result.rowCount == 0) { /*console.log("usuwam że zalogowany");*/ 
+                    delete req.session.legit.entered; 
+                    delete req.session.legit.roomEntered; 
+                    delete req.session.legit.inGame; 
+                    req.session.save(); 
+                } //B. WAŻNE!!! 
+                
+                else if ( req.session.legit.entered && !req.session.guest) {
+                    if (result.rowCount != 0 && result.rows[0].id != req.session.personID) { /*console.log("usuwam że zalogowany");*/ 
+                        delete req.session.legit.entered; 
+                        delete req.session.legit.roomEntered; 
+                        delete req.session.legit.inGame; 
+                        req.session.save(); 
+                    } //B. WAŻNE!!!
+                }
+
+                var ses = req.session;
+                if (!ses.legit.entered) { 
+                    //console.log(ses.legit.entered+"WRACAM3");
+                    res.redirect('/'); 
+                    return; 
+                }
+
+                req.session.urlLegit.entered = ses.legit.entered; //1, ale tak bezpiecznie
+                
+                next();
+            });
         }
-        req.session.urlLegit.entered = ses.legit.entered; //1, ale tak bezpiecznie
-        next();
+        else {
+   
+            if( req.session.legit.entered && req.session.guest && guestz.get(req.session.name) == undefined) { /*console.log("usuwam że zalogowany");*/ 
+                delete req.session.legit.entered; 
+                delete req.session.legit.roomEntered; 
+                delete req.session.legit.inGame; 
+                req.session.save(); 
+            } //B. WAŻNE!!! 
+            
+            
+            if ( req.session.legit.entered && req.session.guest) {
+                var guest = guestz.get(req.session.name);
+                if (guest != undefined && guest.id != req.session.personID) { /*console.log("usuwam że zalogowany");*/ 
+                    delete req.session.legit.entered; 
+                    delete req.session.legit.roomEntered; 
+                    delete req.session.legit.inGame; 
+                    req.session.save(); 
+                } //B. WAŻNE!!!
+            }
+            var ses = req.session;
+            if (!ses.legit.entered) { 
+                //console.log(ses.legit.entered+"WRACAM3");
+                res.redirect('/'); 
+                return; 
+            }
+            req.session.urlLegit.entered = ses.legit.entered; //1, ale tak bezpiecznie
+            
+            next();
+        
+            }
+            //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, też z ID
     });
     
     var inroomRouter = require('./inroom')(roomz,userz, guestz,io,id);

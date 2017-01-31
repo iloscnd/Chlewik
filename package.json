@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/iloscnd/Chlewik#readme",
   "dependencies": {
+    "pg": "6.1.2",
     "socket.io": "^1.7.2"
   }
 }

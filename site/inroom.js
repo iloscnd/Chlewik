@@ -84,17 +84,17 @@ var routerFun = function(roomz,userz, guestz,io,id){
 
             //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
             if (socket.handshake.session.guest) {
-                        var guest = guestz.get(socket.handshake.session.name);
-                        if (guest == undefined ) return;
-                        if (!guest.connected) guest.connected = 1;
-                        delete guest.lastConnected;
-                    }
-                    else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                        var user = userz.get(socket.handshake.session.name);
-                        if (user == undefined ) return;
-                        if (!user.connected) user.connected = 1;
-                        delete user.lastConnected;
-                    }
+                var guest = guestz.get(socket.handshake.session.name);
+                if (guest == undefined ) return;
+                if (!guest.connected) guest.connected = 1;
+                delete guest.lastConnected;
+            }
+            else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+           //     var user = userz.get(socket.handshake.session.name);
+            //    if (user == undefined ) return;
+             //   if (!user.connected) user.connected = 1;
+            //    delete user.lastConnected;
+            }
 
             io.to(roomname).emit('sbd entered',room.connectedPeople); //do wszystkich, się też czyli człeka wliczy i pokaże
 
@@ -130,17 +130,17 @@ var routerFun = function(roomz,userz, guestz,io,id){
                 //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
                 //jak dodaje na wejściu, to musi usunąć na wyjściu
                 if (socket.handshake.session.guest) {
-                            var guest = guestz.get(socket.handshake.session.name);
-                            if (guest == undefined ) return;
-                            guest.lastConnected = date;
-                            delete guest.connected;
-                        }
-                        else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                            var user = userz.get(socket.handshake.session.name);
-                            if (user == undefined ) return;
-                            user.lastConnected = date;
-                            delete user.connected;
-                        }
+                    var guest = guestz.get(socket.handshake.session.name);
+                    if (guest == undefined ) return;
+                    guest.lastConnected = date;
+                    delete guest.connected;
+                }
+                else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
+                  //  var user = userz.get(socket.handshake.session.name);
+                 //   if (user == undefined ) return;
+                //    user.lastConnected = date;
+               //     delete user.connected;
+                }
                         
                 //delete socket.handshake.session.legit.roomEntered; //NIE!!! ma nie usuwać z gry w ten sposób
                 //socket.handshake.session.save();

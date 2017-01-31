@@ -195,10 +195,10 @@ var returnRouter = function(roomz,userz, guestz,io) {
                     delete guest.lastConnected;
             }
             else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                    var user = userz.get(socket.handshake.session.name);
-                    if (user == undefined ) return;
-                    if (!user.connected) user.connected = 1;
-                    delete user.lastConnected;
+              //      var user = userz.get(socket.handshake.session.name);
+               //     if (user == undefined ) return;
+                //    if (!user.connected) user.connected = 1;
+                 //   delete user.lastConnected;
             }
             
             socket.emit('user_connected', {name:player[0], id:"p1" })
@@ -241,10 +241,10 @@ var returnRouter = function(roomz,userz, guestz,io) {
                             delete guest.connected;
                         }
                         else if (socket.handshake.session.legit.entered && !socket.handshake.session.guest) { // 2. warunek niepotrzebny, bo jest else
-                            var user = userz.get(socket.handshake.session.name);
-                            if (user == undefined ) return;
-                            user.lastConnected = date;
-                            delete user.connected;
+                      //      var user = userz.get(socket.handshake.session.name);
+                       //     if (user == undefined ) return;
+                        //    user.lastConnected = date;
+                         //   delete user.connected;
                         }
                         
                 

@@ -119,13 +119,16 @@
     <body>
     <center style="margin:0 auto"> 
     
-        
+        <!-- <a href="/">
+            <img src="placeholderLogo.png" alt="Logo" height=150px width=300px > 
+        </a>  <br> -->
         <div class="container" style="width:400px">
-            <% if (ses.guest==0) { %> 
-                <div class="namediv" style="max-width:320px"><p > Zalogowano jako <p class="user" style="width:90%; overflow:hidden; text-overflow:ellpsis"><%= ses.name %></p> </div>
+            <% if (ses.guest==0) { %>  <!-- jak z innym tagiem niż p, to wychodzi mu tekst za ramkę czasem -->
+                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Zalogowano jako <text class="user" ><%= ses.name %></text></p> </div>
             <% } else { %>
-                <div class="namediv" style="max-width:320px"><p > Wszedłeś jako gość <p class="guest" style="width:90%; overflow:hidden; text-overflow:ellpsis"><%= ses.name %></p> </div>
+                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Wszedłeś jako gość <text class="guest"><%= ses.name %></text></p> </div>
             <% } %>
+        
             <br>
             <br>
             <form id='out' method="POST" action="/rooms/logout"> <!-- action="rooms/logout"-->
@@ -143,6 +146,13 @@
                 
             
             <% } %>
+       </div> 
+        <br>
+        <br>
+       <div class="container" style="width:400px">
+            <form id='refresh' method="POST" action="/rooms"> <!--  -->
+                    <button class="button" name='logout'>Odśwież stronę</button> 
+                </form>
        </div> 
     
         
@@ -178,7 +188,7 @@
                     <% if (value.people==2) { %>  <!-- TO TYLKO DLA DUOSOBOWYCH!!! -->
                         <b style = "color:orange">Pokój pełen</b>
                     <% } %>
-                    <button class="button" style="float:right" name='logout'>Wnijdź do pokoju</button> 
+                    <button class="button" style="float:right" name='logout'>Wejdź do pokoju</button> 
                 </form>
             </div>
             <br>

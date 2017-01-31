@@ -17,10 +17,7 @@
                 //p.innerHTML =  "hej" ;
                 
                 var socket = io();
-                /*var obj = {
-                    session : ses , 
-                    roomname : room.name
-                };*/
+                
                 socket.emit('getInRoom'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
 
                 $('#chatForm').submit(function(){
@@ -79,6 +76,9 @@
 
     <body>
     <center>
+        <a href="/">
+            <img src="roomLogo.png" alt="Logo" height=140px width=370px > 
+        </a>  <br> 
         <div class="container" style="width:700px">
             <% if (ses.guest==0) { %>  <!-- jak z innym tagiem niż p, to wychodzi mu tekst za ramkę czasem -->
                 <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Zalogowano jako <text class="user" ><%= ses.name %></text></p> </div>

@@ -10,30 +10,19 @@ var express = require('express');
 
 var routerFun = function(userz,id) {
 
-    router.all('/', (req,res) =>{
-        //to nie jest potrzebne
-        //res.redirect("/rooms"); //przekierowanie niezalogowanego na "/" jest w rooms
-    });
+    
 
 
 
     router.all('/enter', (req,res) =>{
-        //TODO check if valid pwd etc
-        /*if(req.session.legit.entered)
-        {
-            res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
-            return; 
-            //res.end(); //to też próbuje coś zwracać po zakończeniu
-        }*/
+        
         var name = req.body.name;
         var pwd = req.body.pwd;
-        console.log("wchodzę\n");
+        //console.log("wchodzę\n");
         var flag = false;
         //od razu że nie undefined i że jak trzeba - ale uwaga, bo bez .pwd to cały obiekt
         if (userz.get(name) != undefined &&  userz.get(name).pwd == pwd) flag = true;
-    console.log("PIĘĆ"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));
-    /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
         if (flag) {
             req.session.legit.entered = 1;
@@ -51,18 +40,12 @@ var routerFun = function(userz,id) {
 
     router.post('/create', (req,res) =>{
         //TODO check if not colliding data, pwd==pwd2 etc
-    console.log("SZEŚĆ"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));   
-    /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        /*if(req.session.legit.entered)
-        {
-            res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
-            return; 
-        }*/
+    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        
 
         var flag = true;
         var name = req.body.name;
-        console.log("zakładam\n");
+        //console.log("zakładam\n");
         if (userz.get(name) != undefined) flag = false;
         if (flag) {
             var theID = id;
@@ -87,32 +70,30 @@ var routerFun = function(userz,id) {
 
 
     router.post('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
-    console.log("7"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));
-    /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        console.log("czyWolny\n");
+    
+        if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        //console.log("czyWolny\n");
         
         var flag = true;
         var name = req.body.name; //bo post
-        console.log(name+"\n");
+        //console.log(name+"\n");
         if (userz.get(name) != undefined) flag = false;
         var resp = "";
         if (flag) resp="OK"; else resp="NO";
-        console.log(resp+"\n");
+        //console.log(resp+"\n");
         res.send(resp);
         return; //a może by res.end()?
     });
 
     router.post('/ajaxValid', (req,res) => { //zmienić jakoś na post
-    console.log("8"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));
-    /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        console.log("czyDobre\n");
+        
+        if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        //console.log("czyDobre\n");
         var flag = true;
         var name = req.body.name; //z POST są w body a nie query
         var pwd = req.body.pwd;
-        console.log(name+"\n");
-        console.log(pwd+"\n");
+        //console.log(name+"\n");
+        //console.log(pwd+"\n");
         
         var resp = "";
         var getPwd ;
@@ -123,7 +104,7 @@ var routerFun = function(userz,id) {
             flag = false; 
         }
         if (flag) resp="BAD"; //było NOONE, ale nie powinien mówić które źle 
-        console.log(resp+"\n");
+        //console.log(resp+"\n");
         res.send(resp);
         return; //a może by res.end()?
     });
@@ -139,25 +120,24 @@ var routerFun = function(userz,id) {
         return; //a może by res.end()?
     });
 
-    //trzeba userz, więc w routerFun - dopeiro odtąd i tak mają być potrzebne uprawnienia, a nie wcześniej
+    //trzeba userz, więc w routerFun - dopiero odtąd i tak mają być potrzebne uprawnienia, a nie wcześniej
     // !!! tu już te do których trzeba być zalogowanym
     router.use('/', (req,res,next) => {
 
-        console.log("W4"+JSON.stringify(req.session.legit));
-
+        
         //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło - usuwamy tylko entered, bo resztę się i tak ustawi przy ponownym
         //trzeba usunąć też następne poziomy, bo już potem tam nie dotrze żeby je usunąć
-        if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
+        if( req.session.legit.entered && !req.session.guest && userz.get(req.session.name) == undefined) { /*console.log("usuwam że zalogowany");*/ delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! 
         if ( req.session.legit.entered && !req.session.guest) {
             var user = userz.get(req.session.name);
-            if (user != undefined && user.id != req.session.personID) { console.log("usuwam że zalogowany"); delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
+            if (user != undefined && user.id != req.session.personID) { /*console.log("usuwam że zalogowany");*/ delete req.session.legit.entered; delete req.session.legit.roomEntered; delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
         }
         //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, też z ID
         
 
         var ses = req.session;
         if (!ses.legit.entered || ses.guest) { 
-            console.log(ses.legit.entered+"WRACAM2");
+            //console.log(ses.legit.entered+"WRACAM2");
             res.redirect('/'); 
             return; 
         }
@@ -166,9 +146,7 @@ var routerFun = function(userz,id) {
     });
 
     router.all('/settings', (req,res) => { //przeszedł przez middleware, czyli uprawnienia są
-        console.log("99"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));
-/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         var text = req.query.info;
         if (text == 'pwd') text = "zmieniono hasło";
         var model =  {
@@ -178,27 +156,18 @@ var routerFun = function(userz,id) {
     });
 
     router.post('/change', (req,res) =>{
-        //TODO check if not colliding data, pwd==pwd2 etc
-    console.log("50"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));   
-/*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        /*if(req.session.legit.entered)
-        {
-            res.redirect("/rooms"); //musi być else ALBO return, bo inaczej dalej się wykonuje ta funkcja...
-            return; 
-        }*/
+        if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        
 
         var flag = true;
         var name = req.session.name;
-        console.log("zakładam\n");
+        //console.log("zakładam\n");
         if (userz.get(name) == undefined) flag = false;
         if (flag) {
             var user = userz.get(name);
             user.pwd=req.body.newPwd;
-            console.log("|||/////////////////////////////////zmieniam");
-            //req.session.legit.entered = 1; //te już są ustawione
-            //req.session.name = req.body.name;
-            //req.session.guest = 0;
+            //console.log("|||/////////////////////////////////zmieniam");
+            
             res.redirect('/user/settings?info=pwd');
             return; //a może by res.end()?
         }
@@ -207,14 +176,8 @@ var routerFun = function(userz,id) {
     });
 
     router.all("/logout",(req,res)=>{
-    console.log("9"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));
-    /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        /*if(!req.session.legit.entered)
-        {
-            res.redirect("/");
-            return;
-        }*/
+        if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        
         var name = req.session.name;
         if(req.session.legit.entered==1 && req.session.guest!=1) {
             req.session.destroy(); //TO NIE DZIAŁA - DA SIĘ COFNĄĆ I WEJŚĆ
@@ -228,14 +191,8 @@ var routerFun = function(userz,id) {
     });
 
     router.all("/delete",(req,res)=>{
-    console.log("10"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));
-    /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
-        /*if(!req.session.legit.entered)
-        {
-            res.redirect("/");
-            return;
-        }*/
+        if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
+        
         var name = req.session.name;
         if(req.session.legit.entered==1 && req.session.guest!=1) {
             userz.delete(name);

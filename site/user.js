@@ -87,30 +87,17 @@ var routerFun = function(userz,id) {
         
         console.log('Connected to postgres on ajaxIsFree');
 
-        var query = client.query( "SELECT name FROM users WHERE name = '" + name + "';")
-        
-        query.on('row',function(row){
-            console.log(row);
-            flag = false;
-        })
-        
-        query.on('end',function(){
-            var resp = "";
-            if (flag) resp="OK"; else resp="NO";
-            //console.log(resp+"\n");
-            res.send(resp);
-            console.log(resp);
-            done();
-            return; //a może by res.end()?
-        });
+        var query = client.query( "SELECT name FROM users WHERE name = '" + name + "';",function(err, result){
+            if (err)
+                console.log(err);
+            
+            console.log(name);
+            console.log(rows);
 
-        query.catch('error',function(err){
             res.send("NO");
+            return; //a może by res.end()?
 
-            console.log("hey");
-            done();
-            return;
-        })
+        });
 /*using users
         if (userz.get(name) != undefined) flag = false;
         var resp = "";

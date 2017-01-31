@@ -94,7 +94,7 @@ var routerFun = function(userz,id) {
             
             if(!result)
                 res.send("NO");
-            if(result.rowCount==0)
+            else if(result.rowCount==0)
                 res.send("OK");
             else
                 res.send("NO");
@@ -124,7 +124,26 @@ var routerFun = function(userz,id) {
         
         var resp = "";
         var getPwd ;
-        if (userz.get(name) != undefined) getPwd = userz.get(name).pwd;
+   
+        var query = client.query( "SELECT pass FROM users WHERE name = '" + name + "';",function(err, result){
+            if (err)
+                console.log(err);
+            
+            if(!result)
+                res.send("BAD");
+            else {
+                console.log(result[0])
+                if(result.rowCount==0)
+                    res.send("BAD");
+                else
+                    if(result[0].pass == pwd)
+                        res.send("OK");
+                    else
+                        res.send("BAD");
+            }
+            return; //a może by res.end()?           
+        });
+    /*    if (userz.get(name) != undefined) getPwd = userz.get(name).pwd;
         //console.log(userz.get(name)+"\n");
         if(getPwd != undefined) {
             if (getPwd == pwd) resp = "OK"; else resp = "BAD";
@@ -133,7 +152,7 @@ var routerFun = function(userz,id) {
         if (flag) resp="BAD"; //było NOONE, ale nie powinien mówić które źle 
         //console.log(resp+"\n");
         res.send(resp);
-        return; //a może by res.end()?
+        return; //a może by res.end()? */
     });
 
     router.post('/ajaxPwd', (req,res) => {

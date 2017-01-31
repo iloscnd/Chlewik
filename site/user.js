@@ -1,9 +1,12 @@
 
 var express = require('express');
 
- var router = express.Router();
- router.use( express.static('./static')); //muszę
+var router = express.Router();
+router.use( express.static('./static')); //muszę
 
+var pg = require('pg');
+pg.defaults.ssl = true;
+            
 
 //sprawdzenie poziomu uprawnień - tu są 2 poziomy tak samo jak w guest
 // na początku bez uprawnień tak jak tam
@@ -48,8 +51,8 @@ var routerFun = function(userz) {
 
     router.post('/create', (req,res) =>{
         //TODO check if not colliding data, pwd==pwd2 etc
-    console.log("SZEŚĆ"+JSON.stringify(req.session.legit));
-    console.log(JSON.stringify(req.session.urlLegit));   
+        console.log("SZEŚĆ"+JSON.stringify(req.session.legit));
+        console.log(JSON.stringify(req.session.urlLegit));   
     /*#*/    if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
         /*if(req.session.legit.entered)
         {
@@ -60,8 +63,26 @@ var routerFun = function(userz) {
         var flag = true;
         var name = req.body.name;
         console.log("zakładam\n");
-        if (userz.get(name) != undefined) flag = false;
+        
+        if (userz.get(name) != undefined)
+            flag = false;
+        else
+            pg.connect(process.env.DATABASE_URL, function(err, client) {
+                if (err) throw err;
+                //spraw dź czy jest  w bazie
+                client
+                    .query( "SELECT name FROM users WHERE password = '3';")
+                    .on('row',function(row){
+                        console.log(row);
+                    })
+            });
+
+        console.log("done");
+
         if (flag) {
+            
+            
+
             var newUser = {
                 pwd : req.body.pwd
             };

@@ -52,7 +52,48 @@ var routerFun = function(userz,id) {
 
         var flag = true;
         var name = req.body.name;
+        var pwd = req.body.pwd;
+
+        var query = client.query( "SELECT name FROM users WHERE name = '" + name + "';",function(err, result){
+            if (err)
+                console.log(err);
+            
+            if(!result) { 
+                res.redirect('/redirectDefault');
+                return;
+            }
+            else if(result.rowCount==0){
+                var theID = id;
+                ++id;
+                var newUser = {
+                    id : theID,
+                    name : name, //powielam, ale niech będzie
+                    pwd : pwd
+                };
+               
+                
+                client.query( "INSERT INTO users (id, name, pass) VALUES (" + theID + ", '" + name + "', '" + req.body.pwd + "');",function(Ierr, Iresult){
+                    if (Ierr)
+                        console.log(Ierr);
+                    
+                    console.log(Iresult);
+                    req.session.personID = theID;
+                    req.session.legit.entered = 1;
+                    req.session.name = req.body.name;
+                    req.session.guest = 0;
+                    res.redirect('/rooms');
+                });
+                return;  
+            }
+            else{ 
+                res.redirect('/redirectDefault');
+                return;
+            }            
+        });
+
+
         //console.log("zakładam\n");
+        /*
         if (userz.get(name) != undefined) flag = false;
         if (flag) {
             var theID = id;
@@ -71,9 +112,8 @@ var routerFun = function(userz,id) {
             res.redirect('/rooms');
             return; //a może by res.end()?
         }
-        else { res.redirect('/redirectDefault');return; /*a może by res.end()?*/ } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
-        
-    });
+        else { res.redirect('/redirectDefault');return; /*a może by res.end()?*/// } //to jakby ktoś wklepał dane inaczej (wysłał straszliwy html np.) i nie przedzedł przez formularz sprawdzający
+        });
 
 
     router.post('/ajaxIsFree', (req,res) => { //zmienić jakoś na post
@@ -129,6 +169,7 @@ var routerFun = function(userz,id) {
             if (err)
                 console.log(err);
             console.log("SELECT pass FROM users WHERE name = '" + name + "';");
+            
             if(!result)
                 res.send("BAD");
             else {

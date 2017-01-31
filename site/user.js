@@ -69,9 +69,10 @@ var routerFun = function(userz) {
         else
             pg.connect(process.env.DATABASE_URL, function(err, client) {
                 if (err) throw err;
+                console.log("connecteds");
                 //spraw dź czy jest  w bazie
                 client
-                    .query( "SELECT name FROM users WHERE password = '3';")
+                    .query( "SELECT name FROM users ;")
                     .on('row',function(row){
                         console.log(row);
                     })

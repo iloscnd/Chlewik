@@ -94,8 +94,11 @@ var routerFun = function(userz,id) {
             console.log("SELECT name FROM users WHERE name = '" + name + "';");
             console.log(name);
             console.log(result);
+            
+            client.end();
 
             res.send("NO");
+            
             return; //a może by res.end()?
 
         });

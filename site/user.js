@@ -30,7 +30,7 @@ var routerFun = function(userz,id) {
         //od razu że nie undefined i że jak trzeba - ale uwaga, bo bez .pwd to cały obiekt
         if(JSON.stringify(req.session.legit) !== JSON.stringify(req.session.urlLegit) ) { res.redirect('/redirectDefault'); return; }
 
-        var query = client.query( "SELECT pass id FROM users WHERE name = '" + name + "';",function(err, result){
+        var query = client.query( "SELECT pass, id FROM users WHERE name = '" + name + "';",function(err, result){
             if (err)
                 console.log(err);
             console.log(result);

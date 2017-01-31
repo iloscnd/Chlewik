@@ -71,7 +71,7 @@ var routerFun = function(userz) {
             if (err) throw err;
             console.log("connecteds");
             //spraw dź czy jest  w bazie
-            var selectQuery = client.query( "SELECT name FROM users WHERE name = " + name);
+            var selectQuery = client.query( "SELECT name FROM users WHERE name = '" + name + "'");
             selectQuery.on('row',function(row){
                 flag = false;
                 console.log("read row");

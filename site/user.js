@@ -271,16 +271,16 @@ var routerFun = function(userz,id) {
         //console.log("zakładam\n");
         //if (userz.get(name) == undefined) flag = false;
         client.query("SELECT id FROM users WHERE name = '" + req.session.name + "';",function(err, result){
-            if(Uerr)
-                console.log(Uerr);
-            console.log(Uresult);
+            if(err)
+                console.log(err);
+            console.log(result);
             
             //var user = userz.get(name);
             //user.pwd=req.body.newPwd;
             //console.log("|||/////////////////////////////////zmieniam");
             
             if(result && result.rowCount != 0){
-                client.query("UPDATE users SET City='" + req.body.newPwd + "' WHERE name = '" + name + "';", function(Uerr,Uresult){
+                client.query("UPDATE users SET pass='" + req.body.newPwd + "' WHERE name = '" + name + "';", function(Uerr,Uresult){
                     if(Uerr)
                         console.log(Uerr);
                     console.log(Uresult);

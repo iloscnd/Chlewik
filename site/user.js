@@ -15,7 +15,7 @@ var client = new pg.Client(process.env.DATABASE_URL);
 client.connect();
 
 
-var routerFun = function(id) {
+var routerFun = function(userz,id) {
 
     
 
@@ -159,7 +159,7 @@ var routerFun = function(id) {
         var query = client.query( "SELECT pass FROM users WHERE name = '" + name + "';",function(err, result){
             if (err)
                 console.log(err);
-            //console.log("SELECT pass FROM users WHERE name = '" + name + "';");
+            console.log("SELECT pass FROM users WHERE name = '" + name + "';");
             
             if(!result)
                 res.send("BAD");
@@ -186,7 +186,7 @@ var routerFun = function(id) {
         var query = client.query( "SELECT pass FROM users WHERE name = '" + name + "';",function(err, result){
             if (err)
                 console.log(err);
-            //console.log("SELECT pass FROM users WHERE name = '" + name + "';");
+            console.log("SELECT pass FROM users WHERE name = '" + name + "';");
             
             if(!result)
                 res.send("BAD");

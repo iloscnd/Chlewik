@@ -26,7 +26,7 @@ client.connect();
   // BO tak jest ok - będzie próbowało przekierować na poziom na którym jest, więc najwyżej przejdzie dodatkową ścieżkę
 
 
-var routerFun = function(roomz,guestz,io,id) { //potrzebuję do sprawdzenia aktualności uprawnień
+var routerFun = function(roomz,userz, guestz,io,id) { //potrzebuję do sprawdzenia aktualności uprawnień
 
             io.on('connection', function(socket) {
                 //console.log('connected in room');
@@ -154,7 +154,7 @@ var routerFun = function(roomz,guestz,io,id) { //potrzebuję do sprawdzenia aktu
             //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, też z ID
     });
     
-    var inroomRouter = require('./inroom')(roomz, guestz,io,id);
+    var inroomRouter = require('./inroom')(roomz,userz, guestz,io,id);
     router.use('/room', inroomRouter);
     
     router.all('/', (req,res) =>{

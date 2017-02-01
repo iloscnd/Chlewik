@@ -324,6 +324,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
                 var nameStyle = "user";
                 if(socket.handshake.session.guest)
                     nameStyle = "guest"
+                msg = msg.replace(/</g, "&lt;").replace(/>/g,"&gt;"); //against code injection
                 chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>";
                 chatLast[0] = (chatLast[0]+1)%10;
                 io.to(rnm+"_game").emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>");

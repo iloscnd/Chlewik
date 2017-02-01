@@ -179,15 +179,15 @@ var returnRouter = function(roomz,guestz,io) {
 
             if (!game.playersConnected) game.playersConnected = 0;
             
-            if (!socket.handshake.session.gameCONNECTED) {
+            if (!socket.handshake.session.gameCONNECTEDnow) {
                 game.playersConnected++;
             } 
             else return; //to jak przeglądarki ślą dziwne zapytania gdzieś pod spodem, to żeby nie robiły wtyczek - powinny być po tym normalnym przetwarzane
-            socket.handshake.session.gameCONNECTED = 1;
+            socket.handshake.session.gameCONNECTEDnow = 1;
             socket.handshake.session.save();
     
-            if (!game.playersConnected) game.playersConnected = 0;
-            game.playersConnected ++ ;
+            //if (!game.playersConnected) game.playersConnected = 0;
+            //game.playersConnected ++ ;
             delete game.lastConnected;
 
             //to też musi dodawać do pokoju, żeby pokoju nie usunęło jak długo grają, bo się z niego rozłączają
@@ -223,10 +223,10 @@ var returnRouter = function(roomz,guestz,io) {
 
                 
             
-                if (socket.handshake.session.gameCONNECTED) {
+                if (socket.handshake.session.gameCONNECTEDnow) {
                     if (game.playersConnected) game.playersConnected--;
                 }
-                delete socket.handshake.session.gameCONNECTED;
+                socket.handshake.session.gameCONNECTEDnow = 0;
                 socket.handshake.session.save();
 
                 if (!game.playersConnected) game.lastConnected = date;
@@ -340,7 +340,8 @@ var returnRouter = function(roomz,guestz,io) {
                 var nameStyle = "user";
                 if(socket.handshake.session.guest)
                     nameStyle = "guest"
-                chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>"; //<text> i nie da się code injection
+                msg=msg.replace(/</g, "&lt;").replace(/>/g, "&gt;"); //nie da się code injection
+                chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>"; //<text> nie pomaga na code injection, ale to wyżej tak
                 chatLast[0] = (chatLast[0]+1)%10;
                 io.to(rnm+"_game").emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>");
             }

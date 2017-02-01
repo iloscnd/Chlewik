@@ -5,7 +5,7 @@ var express = require('express');
  router.use( express.static('./static')); //muszę, bo on dokleja z przodu url co mu zostało
 
 
-var routerFun = function(roomz,userz, guestz,io,id){
+var routerFun = function(roomz, guestz,io,id){
 
     //trzeba roomz, więc w routerFun
     //sprawdzenie poziomu uprawnień - 
@@ -41,7 +41,7 @@ var routerFun = function(roomz,userz, guestz,io,id){
     //io.use(function(socket, next){
     //    session(socket.handshake, socket.handshake.res, next); //wtedy moge sie dostac do sesji w socket
     //});
-    var gameRouter = require('./game')(roomz,userz, guestz,io);
+    var gameRouter = require('./game')(roomz, guestz,io);
     router.use('/game',gameRouter);
     
     io.on('connection', function(socket) {
@@ -61,9 +61,22 @@ var routerFun = function(roomz,userz, guestz,io,id){
             chat = room.chat;
             chatLast = room.chatLast
 
-
+            
             socket.join(roomname);
-            room.connectedPeople++;
+
+            if (!room.playersConnected) room.playersConnected = 0;
+            if (!room.connectedPeople) room.connectedPeople = 0;
+            
+            delete room.lastConnected;
+
+            if (!socket.handshake.session.roomCONNECTED) {
+                room.connectedPeople++;
+                room.playersConnected ++ ;
+            } 
+            else return; //to jak przeglądarki ślą dziwne zapytania gdzieś pod spodem, to żeby nie robiły wtyczek - powinny być po tym normalnym przetwarzane
+            
+            socket.handshake.session.roomCONNECTED = 1;
+            socket.handshake.session.save();
             
             //console.log(room.name==undefined);
             //console.log(room.name);
@@ -78,9 +91,7 @@ var routerFun = function(roomz,userz, guestz,io,id){
 
             console.log("-------------------"+JSON.stringify(socket.handshake.session));
 */
-            if (!room.playersConnected) room.playersConnected = 0;
-            room.playersConnected ++ ;
-            delete room.lastConnected;
+            
 
             //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
             if (socket.handshake.session.guest) {
@@ -109,14 +120,30 @@ var routerFun = function(roomz,userz, guestz,io,id){
                 var room = roomz.get(rnm);
                 if (room == undefined) { return; } //czemu to się dzieje?
                     
-                    room.connectedPeople--; //ta funkcja się wykona tylko dla wtyczki połączonej z pokojem, bo się dodaje przy połączeniu
+                   //if (room.connectedPeople)  room.connectedPeople--; //ta funkcja się wykona tylko dla wtyczki połączonej z pokojem, bo się dodaje przy połączeniu
                     
+                    if (socket.handshake.session.roomCONNECTED) {
+                        if (room.connectedPeople) room.connectedPeople--;
+                        if (room.playersConnected) {
+                            room.playersConnected -- ;
+                            if (room.playersConnected == 0) {
+                                room.lastConnected = date;
+                                delete room.playersConnected;
+                            }
+                        } else {
+                            room.lastConnected = date;
+                        }
+                    }
+                    delete socket.handshake.session.roomCONNECTED;
+                    socket.handshake.session.save();
 
                 var date = new Date(); //bierze aktualną
 
                 var date = new Date(); //bierze aktualną
                 // /var tm = date.getTime(); //jednak nie wziąłem tego
 
+                
+                /*
                 if (!room.playersConnected) room.lastConnected = date;
                 else {
                     room.playersConnected -- ;
@@ -124,7 +151,7 @@ var routerFun = function(roomz,userz, guestz,io,id){
                         room.lastConnected = date;
                         delete room.playersConnected;
                     }
-                }
+                }*/
 
                 
                 //musi też tu, bo jak wchodzą do pokoju to z widoku pokoi ich rozłącza, a ma ich nie wywalać
@@ -208,9 +235,9 @@ var routerFun = function(roomz,userz, guestz,io,id){
             var nameStyle = "user";
             if(socket.handshake.session.guest)
                 nameStyle = "guest"
-            chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>";
+            chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>"; //<text> i nie da się code injection
             chatLast[0] = (chatLast[0]+1)%10;
-            io.to(rnm).emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>");
+            io.to(rnm).emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>");
         
         });
 

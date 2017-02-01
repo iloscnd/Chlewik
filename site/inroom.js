@@ -69,13 +69,13 @@ var routerFun = function(roomz, guestz,io,id){
             
             delete room.lastConnected;
 
-            if (!socket.handshake.session.roomCONNECTED) {
+            if (!socket.handshake.session.roomCONNECTEDnow) {
                 room.connectedPeople++;
                 room.playersConnected ++ ;
             } 
             else return; //to jak przeglądarki ślą dziwne zapytania gdzieś pod spodem, to żeby nie robiły wtyczek - powinny być po tym normalnym przetwarzane
-            
-            socket.handshake.session.roomCONNECTED = 1;
+
+            socket.handshake.session.roomCONNECTEDnow = 1;
             socket.handshake.session.save();
             
             //console.log(room.name==undefined);
@@ -122,7 +122,7 @@ var routerFun = function(roomz, guestz,io,id){
                     
                    //if (room.connectedPeople)  room.connectedPeople--; //ta funkcja się wykona tylko dla wtyczki połączonej z pokojem, bo się dodaje przy połączeniu
                     
-                    if (socket.handshake.session.roomCONNECTED) {
+                    if (socket.handshake.session.roomCONNECTEDnow) {
                         if (room.connectedPeople) room.connectedPeople--;
                         if (room.playersConnected) {
                             room.playersConnected -- ;
@@ -134,11 +134,10 @@ var routerFun = function(roomz, guestz,io,id){
                             room.lastConnected = date;
                         }
                     }
-                    delete socket.handshake.session.roomCONNECTED;
+                    socket.handshake.session.roomCONNECTEDnow = 0; //delete jak on ma taki dzielony zapisywany obiekt może psuło?
                     socket.handshake.session.save();
 
-                var date = new Date(); //bierze aktualną
-
+                
                 var date = new Date(); //bierze aktualną
                 // /var tm = date.getTime(); //jednak nie wziąłem tego
 
@@ -235,7 +234,9 @@ var routerFun = function(roomz, guestz,io,id){
             var nameStyle = "user";
             if(socket.handshake.session.guest)
                 nameStyle = "guest"
-            chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>"; //<text> i nie da się code injection
+            
+            msg=msg.replace(/</g, "&lt;").replace(/>/g, "&gt;"); //nie da się code injection
+            chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>"; //<text> nie pomaga na code injection, ale to wyżej tak
             chatLast[0] = (chatLast[0]+1)%10;
             io.to(rnm).emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>");
         

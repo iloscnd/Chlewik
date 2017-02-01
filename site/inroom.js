@@ -165,9 +165,11 @@ var routerFun = function(roomz,userz, guestz,io,id){
             var nameStyle = "user";
                 if(socket.handshake.session.guest)
                     nameStyle = "guest"
-            chat[chatLast[0]] = "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "jest gotowy do gry" + "</li>";
+           var who = socket.handshake.session.name;
+           who = who.replace(/</g, "&lt;").replace(/>/g,"&gt;");
+            chat[chatLast[0]] = "<li>użytkownik <text class=" + '"' + nameStyle + '">' + who + "</text> " + "jest gotowy do gry" + "</li>";
             chatLast[0] = (chatLast[0]+1)%10;
-            io.to(rnm).emit('chat message', "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "jest gotowy do gry" + "</li>");
+            io.to(rnm).emit('chat message', "<li>użytkownik <text class=" + '"' + nameStyle + '">' + who + "</text> " + "jest gotowy do gry" + "</li>");
         });
         socket.on('unready', function() {
             if (socket.handshake == undefined || socket.handshake.session == undefined || socket.handshake.session.legit == undefined) {  return; }
@@ -184,9 +186,11 @@ var routerFun = function(roomz,userz, guestz,io,id){
             var nameStyle = "user";
                 if(socket.handshake.session.guest)
                     nameStyle = "guest"
-            chat[chatLast[0]] = "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "nie jest gotowy do gry" + "</li>";
+         var who = socket.handshake.session.name;
+         who = who.replace(/</g, "&lt;").replace(/>/g,"&gt;");
+            chat[chatLast[0]] = "<li>użytkownik <text class=" + '"' + nameStyle + '">' + who + "</text> " + "nie jest gotowy do gry" + "</li>";
             chatLast[0] = (chatLast[0]+1)%10;
-            io.to(rnm).emit('chat message', "<li>użytkownik <text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + "</text> " + "nie jest gotowy do gry" + "</li>");
+            io.to(rnm).emit('chat message', "<li>użytkownik <text class=" + '"' + nameStyle + '">' + who + "</text> " + "nie jest gotowy do gry" + "</li>");
         });
         socket.on('sbd entered', function(room) { //to chyba nic nie robi
             socket.emit('sbd entered', room);

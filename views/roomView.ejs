@@ -180,7 +180,7 @@
                 <h3><%= value.name %></h3> <!-- TODO !!! - wyświetlanie typu pokoju i ew. miejsca na hasło -->
                 <form id="go_<%= value.name %>" method="POST" action="/rooms/setSessionPwd/?name=<%= value.name %>" > <!--  -->
                     <% if (value.hasPwd) { %>
-                        Hasło: <input type='text' id="roomPwd_<%= value.name %>" name='roomPwd' style="width:100%">
+                        Hasło: <input type='password' id="roomPwd_<%= value.name %>" name='roomPwd' style="width:100%">
                         <br>
                         <p id="roomErr_<%= value.name %>"> </p>
                         

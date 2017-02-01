@@ -8,7 +8,6 @@
 //i dopiero jak się popętli (bo przekierowuje go na / a przecież jest w pokoju, więc z powrotem) to uznaje że nie dostanie ikony
 
 
-var userz = new Map();  //tu, bo chcę sprawdzać też w /rooms czy aktualne uprawnienia
 var guestz = new Map(); 
 var roomz = new Map(); // tu, bo tu jest usuwanie na timeout
 var id = 1;
@@ -109,10 +108,10 @@ app.use('/guest', guestRouter);
 var registerRouter = require('./register');
 app.use('/register', registerRouter);
 
-var roomsRouter = require('./rooms')(roomz,userz, guestz,io,id);
+var roomsRouter = require('./rooms')(roomz,guestz,io,id);
 app.use('/rooms', roomsRouter);
 
-var userRouter = require('./user')(userz,id);
+var userRouter = require('./user')(id);
 app.use('/user', userRouter);
 
 
@@ -156,7 +155,7 @@ setInterval( function() {
     //a nieaktualnym z logowaniem w ogóle usunięcie sesji
     //sesStore. //tak się nie da chyba dostać do sesji, a na pewno nie piszą jak na npm, beznadziejni są
 
-    //jednak przeglądamy po userz, guestz, roomz
+    //jednak przeglądamy po guestz, roomz
     roomz.forEach( (value, key, map) => { 
             var game = value.game;
             if (game != undefined) {

@@ -6,7 +6,7 @@ router.use( express.static('./static'));
 
 
 
-var returnRouter = function(roomz,userz, guestz,io) {
+var returnRouter = function(roomz,guestz,io) {
 
     
     //trzeba roomz, więc w routerFun
@@ -66,7 +66,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
 
 
-        res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis, chat: room.chat, chatLast: room.chatLast[0]});
+        res.render('game.ejs',{howManyConnected: game.playersConnected, state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis, chat: room.chat, chatLast: room.chatLast[0]});
         return; //a może by res.end()?
     });
 
@@ -177,6 +177,14 @@ var returnRouter = function(roomz,userz, guestz,io) {
             
             socket.join(rnm+"_game");
 
+            if (!game.playersConnected) game.playersConnected = 0;
+            
+            if (!socket.handshake.session.gameCONNECTED) {
+                game.playersConnected++;
+            } 
+            else return; //to jak przeglądarki ślą dziwne zapytania gdzieś pod spodem, to żeby nie robiły wtyczek - powinny być po tym normalnym przetwarzane
+            socket.handshake.session.gameCONNECTED = 1;
+            socket.handshake.session.save();
     
             if (!game.playersConnected) game.playersConnected = 0;
             game.playersConnected ++ ;
@@ -212,6 +220,14 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
                 var date = new Date(); //bierze aktualną
                 // /var tm = date.getTime(); //jednak nie wziąłem tego
+
+                
+            
+                if (socket.handshake.session.gameCONNECTED) {
+                    if (game.playersConnected) game.playersConnected--;
+                }
+                delete socket.handshake.session.gameCONNECTED;
+                socket.handshake.session.save();
 
                 if (!game.playersConnected) game.lastConnected = date;
                 else {
@@ -324,9 +340,9 @@ var returnRouter = function(roomz,userz, guestz,io) {
                 var nameStyle = "user";
                 if(socket.handshake.session.guest)
                     nameStyle = "guest"
-                chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>";
+                chat[chatLast[0]] = "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>"; //<text> i nie da się code injection
                 chatLast[0] = (chatLast[0]+1)%10;
-                io.to(rnm+"_game").emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text> " + msg + "</li>");
+                io.to(rnm+"_game").emit('chat message', "<li><text class=" + '"' + nameStyle + '">' + socket.handshake.session.name + ":</text><text> " + msg + "</text></li>");
             }
         });
         socket.on('surrender',function(msg){

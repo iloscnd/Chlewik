@@ -1,4 +1,3 @@
-//test game check for socket.io
 var express = require('express');
 var router = express.Router();
 
@@ -15,30 +14,7 @@ var returnRouter = function(roomz,userz, guestz,io) {
     //i tak by starczyło, bo je przechodzi po kolei
     //!!! można by też sprawdzać po kolei od najpłytszego i przekierowywać na poprzedni, wtedy mniej zapytań
     /// !! tu jest gorzej, bo trzeba w funkcji też sprawdzać czy id pokojogry się zgadza - ew. nazwę czytać z sesji i tyle
-    router.use('/', (req,res,next) => {
-
-        
-        //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
-
-        //jak nie dam save sesji, to nie zmoodyfikuje
-        if( req.session.legit.roomEntered == undefined) { /*console.log("usuwam że w grze");*/ delete req.session.legit.inGame; req.session.save(); }  //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
-        else if( roomz.get(req.session.legit.roomEntered) == undefined) { /*console.log("usuwam że w grze");*/ delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
-        else if( (roomz.get(req.session.legit.roomEntered)).game == undefined) { /*console.log("usuwam że w grze");*/ delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
-        //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, W GRZE TEŻ TRZEBA ID - bo ktoś mógłby wejść jak się skończyła tamta
-        else  {
-            var game = (roomz.get(req.session.legit.roomEntered)).game;
-            if (game != undefined && game.id != req.session.gameID) { /*console.log("usuwam że w grze");*/ delete req.session.legit.inGame; req.session.save(); } //B. WAŻNE!!!
-        }
-
-        var ses = req.session;
-
-        if (!ses.legit.inGame) { 
-            res.redirect('/'); 
-            return; 
-        }
-        req.session.urlLegit.inGame = ses.legit.inGame; //1, ale tak bezpiecznie; bez tego się pętli w neiskończoność przekierowując że wolno ale nie wolno
-        next();
-    });
+    router.use('/', checkSessionLegitness);
     
 
 
@@ -51,22 +27,33 @@ var returnRouter = function(roomz,userz, guestz,io) {
         
         var roomName = req.session.legit.roomEntered;
         var room = roomz.get(roomName);
-        //console.log(roomName);
-        //console.log(room);
-        if (room == undefined) {res.redirect('/redirectDefault'); return; }
+
+        if (room == undefined) {
+            res.redirect('/redirectDefault');
+            return; 
+        }
         var game = room.game;
-        if (game == undefined) {res.redirect('/redirectDefault'); return; }
+        if (game == undefined) {
+            res.redirect('/redirectDefault'); 
+            return; 
+        }
 
         var p1vis = "hidden";
         var p2vis = "visible";
-        if(game.turn[0] == 0){
+        if(game.turn[0] == 0) {
             p2vis = "hidden";
             p1vis = "visible";  
         }
 
 
 
-        res.render('game.ejs',{state : game.state, srcs: game.srcs, ses: req.session, p1vis: p1vis, p2vis: p2vis, chat: room.chat, chatLast: room.chatLast[0]});
+        res.render('game.ejs',{ state : game.state,
+                                srcs: game.srcs,
+                                ses: req.session, 
+                                p1vis: p1vis, 
+                                p2vis: p2vis, 
+                                chat: room.chat, 
+                                chatLast: room.chatLast[0]});
         return; //a może by res.end()?
     });
 
@@ -349,6 +336,48 @@ var returnRouter = function(roomz,userz, guestz,io) {
 
 
     return router;
+
+
+    function checkSessionLegitness(req,res,next)  {
+        
+        
+        //usuwanie nieaktualnych uprawnień, żeby nie próbowało przekierować i się nie pętliło
+    
+        //jak nie dam save sesji, to nie zmoodyfikuje
+        if( req.session.legit.roomEntered == undefined) {
+                /*console.log("usuwam że w grze");*/ 
+                delete req.session.legit.inGame; 
+                req.session.save(); //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony
+        }  
+        else if( roomz.get(req.session.legit.roomEntered) == undefined) {
+            /*console.log("usuwam że w grze");*/
+            delete req.session.legit.inGame; 
+            req.session.save(); //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony 
+        } 
+        else if( (roomz.get(req.session.legit.roomEntered)).game == undefined)
+        { 
+            /*console.log("usuwam że w grze");*/ 
+            delete req.session.legit.inGame; 
+            req.session.save(); //B. WAŻNE!!! jak ktoś usunie grę jak ten nie połączony 
+        } 
+        //starczy wykasowywać tu w sprawdzaniu uprawnień te nieaktualne, W GRZE TEŻ TRZEBA ID - bo ktoś mógłby wejść jak się skończyła tamta
+        else  {
+            var game = (roomz.get(req.session.legit.roomEntered)).game;
+            if (game != undefined && game.id != req.session.gameID) { 
+                /*console.log("usuwam że w grze");*/ 
+                delete req.session.legit.inGame; 
+                req.session.save(); 
+            }
+        }
+    
+        if (!req.session.legit.inGame) { 
+            res.redirect('/'); 
+            return; 
+        }
+        req.session.urlLegit.inGame = req.session.legit.inGame; //1, ale tak bezpiecznie; bez tego się pętli w neiskończoność przekierowując że wolno ale nie wolno
+        next();
+    }
+
 }
 
 module.exports = returnRouter;

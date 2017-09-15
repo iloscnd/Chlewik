@@ -2,7 +2,7 @@
   "name": "chlewik",
   "version": "1.0.0",
   "description": "Strona z grami wielosobowymi w przegladarce",
-  "main": "app.js",
+  "main": "site/app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

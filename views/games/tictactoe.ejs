@@ -1,0 +1,10 @@
+
+  <table>
+      <% for(i = 0; i < 9; i++) {%>
+        <% if( i % 3 == 0 && i > 0) {%>
+          </tr> <%}%>
+        <% if( i % 3 == 0) {%>
+          <tr> <% } %>
+      <td><input type="image" src=<%=srcs[state[i]] %> id=<%=i%> ></td> <%}%>
+  </table>
+

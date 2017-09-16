@@ -7,133 +7,76 @@
         </title>
 
         <script src="/socket.io/socket.io.js"></script>
-        <script src="/appjs.js"></script> <!--to generuje żądanie  do serwera takie normalne, bo czemu nie...- i moje przekierowanie go przekierowuje, ale jakoś działa  -->
+        <script src="/appjs.js"></script> 
         <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
 
         <script>
             
             window.addEventListener('load', function(){
                 var p = document.getElementById('pisz');
-                //p.innerHTML =  "hej" ;
                 
                 var socket = io();
                 
-                socket.emit('getInRoom'); //no gratuluję im genialnego narzędzia  że w script to już się nie da dostać zmiennych https://github.com/RandomEtc/ejs-locals/issues/12
-
+                socket.emit('getInRoom'); 
                 $('#chatForm').submit(function(){
                     socket.emit('chat message room', $('#chatMsg').val());
                     $('#chatMsg').val('');
                     return false;
                 });
-            
                 socket.on('chat message', function(msg){
                     $('#chat').append(msg);
                     $('#chat').scrollTop($('#chat').prop("scrollHeight"));
                 });
-
-                socket.on('sbd entered', function(howManyAre) { //dbam wcześniej żeby nie undef
+                socket.on('sbd entered', function(howManyAre) { 
                     var p = document.getElementById('pisz');
-                    p.innerHTML = "Liczba aktualnie połączonych graczy w pokoju:"+ howManyAre ; // TU LEPIEJ ZMIENIĆ, ŻEBY BYŁA JAKAŚ FUNKCJA ODŚWIEŻ STAN CAŁEGO POKOJU I GRY POTEM
+                    p.innerHTML = "Liczba aktualnie połączonych graczy w pokoju:"+ howManyAre ; 
                 });
-
                 var btReady = document.getElementById('ready');
                 btReady.addEventListener('click', function() {
-
                     socket.emit('ready');
                 });
-
                 var btReady = document.getElementById('unready');
                 btReady.addEventListener('click', function() {
-
                     socket.emit('unready');
                 });
-
                 socket.on('begin game', function() {
-
-
-
-                    // TU IM DODAWAĆ NA SERWERZE INGAME DO LEGIT W SESJI - bez tego się źle przekierowuje
-
-
-
                     window.location = "/rooms/room/createGame";
                 });
-
-
-                
-
                 socket.on('user_connected', function(msg){
                     $("#"+msg.id).text(msg.name);
-                })
-                
+                }) 
             });
-
         </script> 
-        
-
     </head>
-    
 
     <body>
     <center>
-        <a href="/">
-            <img src="roomLogo.png" alt="Logo" height=140px width=370px > 
-        </a>  <br> 
-        <div class="container" style="width:700px">
-            <% if (ses.guest==0) { %>  <!-- jak z innym tagiem niż p, to wychodzi mu tekst za ramkę czasem -->
-                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Zalogowano jako <text class="user" ><%= ses.name %></text></p> </div>
-            <% } else { %>
-                <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Wszedłeś jako gość <text class="guest"><%= ses.name %></text></p> </div>
-            <% } %>
-        </div>
-        <br>
-        <br>
-        <!-- <a href="/">
-            <img src="placeholderLogo.png" alt="Logo" height=150px width=300px > 
-        </a> -->
+        <% include common/gameRoomHeader.ejs %>
         <div class = "container" style="width:700px">
             
         <h3 style="width:90%; overflow:auto;">Witaj w pokoju </h3><h2> <%= room.name %> <br> </h2>
         Gra rozpoczyna się automatycznie,<br>gdy wszyscy są gotowi <br>
-        <h4 id="pisz" style="width:90%; overflow:auto;"><%=room.name%></h4> <!-- nie może być spacji jak patrzę na innerHTML ; zrobić lepiej osobny niewidoczny-->
-        
-        
-        
+        <h4 id="pisz" style="width:90%; overflow:auto;"><%=room.name%></h4> 
+  
         </div>
     
     <br>
     <br>
     <div class = "containerRoom" class = "containerRoom" style="width:700px">
         <div class = "container" style="float:left; width:33%; ">
-            
-                <form id='go' method="POST" action="/rooms/room/leave" > <!-- ZROBIĆ TO INACZEJ BO DALEJ WIDZI STARY STAN POKOI --> 
-                        <button class="button" name='logout'>Wyjdź z pokoju</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
-                </form>
-            
-                <br>
-                <br>
-            
-                <button class="button" id="ready">Gotów do gry</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
-
-                <br>
-                <br>
-            
-                <button class="button" id="unready">Niegotowy</button>   <!-- przez opuszczenie strony socket się rozłączy i będzie co trzeba -->
-            
-        </div>
-        <div id="chatBox" class = "namediv"  style="float: right; width:53%; ">
-        
-            <ul id="chat" style="text-align:left; margin:0; padding:10px; overflow: auto; height:350px; list-style-type: none;" >
-                <% for(i = 0; i < 10; i++) {%>
-                <%- chat[(i+chatLast)%10] %>
-                <%}%>  
-            </ul>
-            <br>
-            <form id="chatForm" style="bottom: 0; " method="">
-                <input id="chatMsg" autocomplete="off" /><button>Wyślij</button>
+            <form id='go' method="POST" action="/rooms/room/leave" >
+                <button class="button" name='logout'>Wyjdź z pokoju</button>  
             </form>
-            
-        </div> 
+            <br>
+            <br>
+            <button class="button" id="ready">Gotów do gry</button>  
+            <br>
+            <br>
+            <button class="button" id="unready">Niegotowy</button>  
+        </div>
+        
+        <% include common/chatBox.ejs %>
+
     </div>
     </center>
     </body>

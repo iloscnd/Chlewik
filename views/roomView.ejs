@@ -11,13 +11,11 @@
         <script> alert("pokój jest pełen"); </script>
         <% } %>
 
-        <!-- bez tego się wywala na tworzeniu wtyczki  -->
-         <script src="/socket.io/socket.io.js"></script>
-        <script src="/appjs.js"></script> <!--to generuje żądanie  do serwera takie normalne, bo czemu nie...- i moje przekierowanie go przekierowuje, ale jakoś działa  -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="/appjs.js"></script> 
         
         <script>
-        window.addEventListener('load', function() { //jak będzie łądował body jak rozumiem
-            //console.log("chociaż tyle\n");
+        window.addEventListener('load', function() { 
 
             var socket = io();
                 
@@ -28,21 +26,19 @@
             var newBt = document.getElementById('newRoomBt');
             var newForm = document.getElementById('newRoomForm');
             newBt.addEventListener('click', function(){
-                var req=new XMLHttpRequest(); //muszę słać sztuczne żądanie, żeby działało
+                var req=new XMLHttpRequest(); 
                 req.open('get', '/rooms/ajaxFormNew', true);
                 req.onreadystatechange = function() {
-                    if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                    if (req.readyState == XMLHttpRequest.DONE) { 
                         
                         newBt.innerHTML = req.responseText;
-                        newBt.setAttribute("style", "display:none"); //tak napisane wszystko rozumie
-                        newForm.setAttribute("style", "");// ; width:100%; height:100%";
+                        newBt.setAttribute("style", "display:none"); 
+                        newForm.setAttribute("style", "");
                     }
                 }
-                req.send(); //oczywiście przed końcem funkcji przycisku
+                req.send(); 
             });
             
-            //żeby na początku już
-            //var form = document.getElementById('newRoomForm');
             var pwd = document.getElementById('pwd');
             var pwd2 = document.getElementById('pwd2');
             var roomName = document.getElementById('name');
@@ -61,7 +57,7 @@
                     err.innerHTML += "hasła się nie pokrywają"
                     flag = false;
                 }
-                var name = roomName.value.trim(); //usuwa whitespace na końcach
+                var name = roomName.value.trim(); 
                 if (name == "")
                 {
                     if (flag == false) err.innerHTML += "<br>";
@@ -72,12 +68,12 @@
                 var req=new XMLHttpRequest();
                 var params = "name="+name;
                 req.open('POST', '/rooms/ajaxIsName', true);
-                    //ZMIENIONE NA POST
+                    
                     req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                     req.setRequestHeader("Content-length", params.length);
                     req.setRequestHeader("Connection", "close");
                 req.onreadystatechange = function() {
-                    if (req.readyState == XMLHttpRequest.DONE) { //uwaga na wielkość liter
+                    if (req.readyState == XMLHttpRequest.DONE) {
                         if(req.responseText != "OK") {
                             if (flag == false) err.innerHTML += "<br>";
                             err.innerHTML += "nazwa pokoju jest już zajęta"
@@ -85,21 +81,14 @@
                             
                         }
                         else {
-                            //err.innerHTML += "coś jest nie tak" //już ok
-                            if(pwd.value.trim() == valpwd && pwd2.value.trim()==valpwd2 && roomName.value.trim()==valname && flag==true) newForm.submit(); //jeśli przez czas asynchr. nic nie zmienił
+                            if(pwd.value.trim() == valpwd && pwd2.value.trim()==valpwd2 && roomName.value.trim()==valname && flag==true) 
+                                newForm.submit(); 
                         }
                     }
                 }
                 req.send(params);
-                /* //to jakby było synchronicznie
-                if(req.responseText != "OK") {
-                    if (flag == false) document.getElementById('err').innerHTML += "<br>";
-                    document.getElementById('err').innerHTML += "nazwa pokoju jest już zajęta"
-                    flag = false;
-                }
-                return flag;*/
                 
-                return false; //zastopuj póki nie przyjdzie asynchroniczna odpowiedź
+                return false;           
 
                 
             };
@@ -194,8 +183,6 @@
             <br>
             <br>
         <% }); %>
-
-<!-- TODO dodać przycisk odświeżenia, który zmodyfikuje kawałek html z tym forem, żeby ajax i nowe pokoje i w ogóle -->
 
         
     </center>

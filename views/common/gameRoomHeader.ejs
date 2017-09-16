@@ -1,0 +1,12 @@
+<a href="/">
+    <img src="roomLogo.png" alt="Logo" height=140px width=370px > 
+</a>  <br> 
+<div class="container" style="width:700px">
+    <% if (ses.guest==0) { %>  
+        <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Zalogowano jako <text class="user" ><%= ses.name %></text></p> </div>
+    <% } else { %>
+        <div class="namediv" style="max-width:320px"><p style="width:90%; overflow:auto; text-overflow:ellpsis">Wszedłeś jako gość <text class="guest"><%= ses.name %></text></p> </div>
+    <% } %>
+</div>
+<br>
+<br>
